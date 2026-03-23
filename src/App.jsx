@@ -352,7 +352,6 @@ export default function App() {
           <nav className="topbar-nav" aria-label="Primary modes">
             <button type="button" className={`topbar-link ${!isInterviewMode ? "active" : ""}`} onClick={() => setActiveTab(lastAnalysisTab)}>Coding</button>
             <button type="button" className={`topbar-link ${isInterviewMode ? "active" : ""}`} onClick={() => setActiveTab("Interview Mode")}>Interview</button>
-            <span className="topbar-link topbar-link--static">Local</span>
           </nav>
 
           <div className="topbar-meta">
