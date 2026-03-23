@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DevMate - Coding Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary": "#00363d",
+                        "on-primary-fixed-variant": "#004f58",
+                        "surface-container-lowest": "#0a0e14",
+                        "surface-bright": "#353940",
+                        "secondary": "#cdbdff",
+                        "primary-fixed": "#9cf0ff",
+                        "primary": "#c3f5ff",
+                        "surface-tint": "#00daf3",
+                        "on-tertiary-container": "#5e5473",
+                        "on-primary-fixed": "#001f24",
+                        "on-surface": "#dfe2eb",
+                        "inverse-on-surface": "#2d3137",
+                        "surface-container": "#1c2026",
+                        "primary-container": "#00e5ff",
+                        "on-error-container": "#ffdad6",
+                        "background": "#10141a",
+                        "on-secondary-fixed": "#20005f",
+                        "tertiary-fixed-dim": "#cdc1e5",
+                        "on-background": "#dfe2eb",
+                        "surface-container-high": "#262a31",
+                        "surface-dim": "#10141a",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed-variant": "#4b4260",
+                        "on-secondary-container": "#c0acff",
+                        "on-tertiary-fixed": "#1f1732",
+                        "tertiary": "#f2e8ff",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#d7caf0",
+                        "primary-fixed-dim": "#00daf3",
+                        "on-error": "#690005",
+                        "outline": "#849396",
+                        "tertiary-fixed": "#eaddff",
+                        "on-secondary-fixed-variant": "#4f00d0",
+                        "surface-container-highest": "#31353c",
+                        "surface": "#10141a",
+                        "on-secondary": "#370096",
+                        "on-tertiary": "#342c49",
+                        "secondary-container": "#5203d5",
+                        "on-primary-container": "#00626e",
+                        "secondary-fixed": "#e8deff",
+                        "outline-variant": "#3b494c",
+                        "surface-variant": "#31353c",
+                        "secondary-fixed-dim": "#cdbdff",
+                        "surface-container-low": "#181c22",
+                        "on-surface-variant": "#bac9cc",
+                        "inverse-primary": "#006875",
+                        "inverse-surface": "#dfe2eb"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(49, 53, 60, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .neon-glow-primary {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+        }
+        .neon-glow-secondary {
+            box-shadow: 0 0 20px rgba(82, 3, 213, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3b494c;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/30 selection:text-primary min-h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-[#181c22] shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex justify-between items-center w-full px-6 py-3 h-16 z-50">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tighter text-[#c3f5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.4)] font-headline">DevMate</span>
+<nav class="hidden md:flex items-center gap-6 font-headline tracking-tight">
+<a class="text-[#00e5ff] border-b-2 border-[#00e5ff] pb-1" href="#">Coding</a>
+<a class="text-[#bac9cc] hover:text-[#c3f5ff] transition-all duration-300" href="#">Interview</a>
+<a class="text-[#bac9cc] hover:text-[#c3f5ff] transition-all duration-300" href="#">Docs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-full outline-variant/15 border border-outline-variant/10">
+<span class="text-xs font-bold text-primary tracking-widest uppercase">Coding Mode</span>
+<span class="material-symbols-outlined text-sm text-primary">code</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-full text-[#bac9cc] hover:bg-[#262a31] transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<button class="p-2 rounded-full text-[#bac9cc] hover:bg-[#262a31] transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">info</span>
+</button>
+<button class="p-2 rounded-full text-[#bac9cc] hover:bg-[#262a31] transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]">
+<div class="w-full h-full rounded-full bg-surface-container-low flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Cyberpunk style user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMxqd10SE5Apz4m3i_PZXygBoYvet7kpnHNm0wvAb8hnlu1O9qxyPXRGofqZZuE5MO4chqAgsCNPLSwQzvl67saawUkEeqYZBBzhF1Kr7c-ok4cAka4F-c_4IwOIwfextxgwody0jYEt7cpCE9-Vh4TErEVJTiy9kRPi7u67wmqSzlBS29ua3A78nebQ0o5nzISOjrp4me85yu6KbkdjVkNjSWQcmQDzfnlG6joXsQPbrm6hzpWh84OoIm__GN9EGWHRhevSdNDQdo"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-20 md:w-64 bg-[#10141a] flex flex-col border-r border-[#3b494c]/15 bg-gradient-to-r from-[#181c22] to-transparent z-40 transition-all duration-200 ease-in-out">
+<div class="p-6 hidden md:block">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 bg-secondary-container/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">terminal</span>
+</div>
+<div>
+<h3 class="text-on-surface font-headline font-bold text-sm">DevMate</h3>
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider">AI local assistant</p>
+</div>
+</div>
+<button class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(0,229,255,0.3)] transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                    New Session
+                </button>
+</div>
+<nav class="flex-1 px-4 space-y-2 font-headline text-sm font-medium">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-r from-[#5203d5]/20 to-transparent text-[#c0acff] border-l-4 border-[#00e5ff]" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="hidden md:block">Explain</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="bug_report">bug_report</span>
+<span class="hidden md:block">Debug</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+<span class="hidden md:block">Optimize</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="hidden md:block">Document</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant/10 space-y-1">
+<a class="flex items-center gap-4 px-4 py-2 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] transition-all text-sm font-headline" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="hidden md:block">Settings</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-2 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] transition-all text-sm font-headline" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="hidden md:block">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 ml-20 md:ml-64 flex flex-col md:flex-row h-full">
+<!-- Left Panel: Code Editor -->
+<section class="flex-1 flex flex-col bg-surface-container-low relative border-r border-outline-variant/5">
+<div class="flex items-center justify-between px-6 py-3 bg-surface-container-low/50 border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-on-surface-variant text-xs font-mono">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span>main.py</span>
+</div>
+<select class="bg-surface-container-highest text-on-surface-variant text-[11px] font-mono border-none rounded px-2 py-1 focus:ring-1 focus:ring-primary/50 cursor-pointer">
+<option>Python</option>
+<option>C++</option>
+<option>Java</option>
+<option>TypeScript</option>
+</select>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[10px] text-outline uppercase tracking-widest font-bold">UTF-8</span>
+</div>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-6 font-mono text-sm leading-relaxed overflow-hidden flex">
+<div class="pr-6 border-r border-outline-variant/10 text-outline/30 select-none text-right flex flex-col">
+<span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+</div>
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline-variant/40 resize-none custom-scrollbar" placeholder="Paste or write code here..."></textarea>
+</div>
+<!-- Action Bar -->
+<div class="p-4 bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<button class="px-5 py-2.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+                            Run AI
+                        </button>
+<button class="px-4 py-2.5 rounded-full text-on-surface-variant hover:bg-surface-container-highest transition-all text-sm font-medium">
+                            Clear
+                        </button>
+<button class="px-4 py-2.5 rounded-full text-on-surface-variant hover:bg-surface-container-highest transition-all text-sm font-medium">
+                            Sample Code
+                        </button>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 rounded-full glass-panel border border-outline-variant/10">
+<div class="flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style="animation-delay: 0s"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style="animation-delay: 0.2s"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style="animation-delay: 0.4s"></span>
+</div>
+<span class="text-[10px] font-headline font-bold text-primary-fixed uppercase tracking-wider">DevMate is thinking</span>
+</div>
+</div>
+</section>
+<!-- Right Panel: AI Output -->
+<section class="w-full md:w-[450px] lg:w-[550px] flex flex-col bg-surface overflow-hidden">
+<div class="p-6 pb-2">
+<h2 class="text-xl font-headline font-bold text-primary mb-4">AI Analysis</h2>
+<!-- Tabs -->
+<div class="flex items-center gap-1 p-1 bg-surface-container-high rounded-xl mb-6">
+<button class="flex-1 py-2 rounded-lg bg-surface-container-highest text-primary font-bold text-xs flex flex-col items-center gap-1 neon-glow-primary">
+<span class="material-symbols-outlined text-sm">description</span>
+                            Explain
+                        </button>
+<button class="flex-1 py-2 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-highest/50 transition-all text-xs flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-sm">bug_report</span>
+                            Debug
+                        </button>
+<button class="flex-1 py-2 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-highest/50 transition-all text-xs flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-sm">bolt</span>
+                            Optimize
+                        </button>
+<button class="flex-1 py-2 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-highest/50 transition-all text-xs flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-sm">auto_stories</span>
+                            Doc
+                        </button>
+</div>
+</div>
+<!-- AI Output Content -->
+<div class="flex-1 overflow-y-auto px-6 space-y-6 pb-12 custom-scrollbar">
+<!-- Logic Flow Card -->
+<div class="glass-panel rounded-xl p-5 border border-outline-variant/10 neon-glow-secondary">
+<div class="flex items-center gap-3 mb-4">
+<div class="p-2 rounded-lg bg-secondary-container/30">
+<span class="material-symbols-outlined text-secondary text-sm">account_tree</span>
+</div>
+<h4 class="font-headline font-bold text-sm">Logic Flow Analysis</h4>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                            The provided code snippet initializes a recursion loop to handle directory indexing. It uses a <code class="text-primary-fixed bg-surface-container-highest px-1.5 py-0.5 rounded">O(log n)</code> search strategy.
+                        </p>
+<div class="flex gap-2">
+<span class="px-2 py-1 rounded bg-secondary-container/20 text-on-secondary-container text-[10px] font-bold uppercase">Recursion</span>
+<span class="px-2 py-1 rounded bg-primary-container/20 text-primary text-[10px] font-bold uppercase">Search</span>
+</div>
+</div>
+<!-- Bento Grid of Key Metrics -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-high rounded-xl p-4 border border-outline-variant/10">
+<span class="text-[10px] uppercase tracking-widest text-outline font-bold block mb-1">Time Complexity</span>
+<div class="text-xl font-mono text-primary">O(n²)</div>
+</div>
+<div class="bg-surface-container-high rounded-xl p-4 border border-outline-variant/10">
+<span class="text-[10px] uppercase tracking-widest text-outline font-bold block mb-1">Risk Score</span>
+<div class="text-xl font-mono text-error">Low</div>
+</div>
+</div>
+<!-- Optimization Suggestion -->
+<div class="glass-panel rounded-xl p-5 border border-outline-variant/10">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-primary-container/20">
+<span class="material-symbols-outlined text-primary text-sm">lightbulb</span>
+</div>
+<h4 class="font-headline font-bold text-sm">Optimization Tip</h4>
+</div>
+<span class="material-symbols-outlined text-outline text-sm">more_vert</span>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-3 mb-3 border-l-2 border-primary">
+<pre class="font-mono text-xs text-primary-fixed leading-tight">// Use list comprehension for better perf
+results = [f(x) for x in data]</pre>
+</div>
+<p class="text-on-surface-variant text-xs italic">
+                            Reduces overhead by leveraging Python's internal C optimization loop.
+                        </p>
+</div>
+<!-- Community Context -->
+<div class="flex items-center gap-4 p-4 rounded-xl border border-outline-variant/10 bg-surface-container-low/30">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full bg-surface-bright border border-background flex items-center justify-center text-[8px]" data-alt="Avatar of user profile">JD</div>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-background flex items-center justify-center text-[8px]" data-alt="Avatar of user profile">AK</div>
+<div class="w-6 h-6 rounded-full bg-primary-container border border-background flex items-center justify-center text-[8px] text-on-primary font-bold">+12</div>
+</div>
+<p class="text-[11px] text-on-surface-variant">Experts recently discussed this pattern in the #python-optimization thread.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Overlay Gradient for Ether Feel -->
+<div class="fixed pointer-events-none inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent z-0"></div>
+<div class="fixed pointer-events-none inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-secondary/5 via-transparent to-transparent z-0"></div>
+</body></html>

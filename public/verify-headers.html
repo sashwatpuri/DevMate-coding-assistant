@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevMate - Verify Headers</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      padding: 20px;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #00ffaa;
+      border-bottom: 2px solid #00ffaa;
+      padding-bottom: 10px;
+    }
+    .check {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+    .pass {
+      background: rgba(0, 255, 170, 0.1);
+      border-color: #00ffaa;
+    }
+    .fail {
+      background: rgba(255, 70, 70, 0.1);
+      border-color: #ff4646;
+    }
+    .warn {
+      background: rgba(255, 170, 0, 0.1);
+      border-color: #ffaa00;
+    }
+    .check-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 16px;
+    }
+    .check-message {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .icon {
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 18px;
+    }
+    .summary {
+      margin: 30px 0;
+      padding: 20px;
+      background: rgba(0, 255, 170, 0.05);
+      border-radius: 8px;
+      border: 1px solid #00ffaa;
+    }
+    .summary h2 {
+      margin-top: 0;
+      color: #00ffaa;
+    }
+    .code {
+      background: #1a1a1f;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>DevMate Browser Environment Check</h1>
+  <p>This page verifies that your browser environment is properly configured for running DevMate's local AI models.</p>
+  
+  <div id="results"></div>
+  
+  <div class="summary" id="summary"></div>
+  
+  <script>
+    const checks = [
+      {
+        name: 'Cross-Origin Isolated',
+        test: () => typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated,
+        critical: false,
+        getMessage: () => {
+          if (typeof crossOriginIsolated === 'undefined') {
+            return 'Property not available (old browser version)';
+          }
+          return crossOriginIsolated 
+            ? 'Multi-threading enabled ✓ - Optimal performance' 
+            : 'Single-threaded mode - Model will run slower but still functional. This is normal during development.';
+        }
+      },
+      {
+        name: 'SharedArrayBuffer',
+        test: () => typeof SharedArrayBuffer !== 'undefined',
+        critical: false,
+        getMessage: () => typeof SharedArrayBuffer !== 'undefined'
+          ? 'Available ✓ - Enables multi-threaded inference'
+          : 'Not available - Expected without cross-origin isolation. Single-threaded mode will be used.'
+      },
+      {
+        name: 'WebAssembly',
+        test: () => typeof WebAssembly !== 'undefined',
+        critical: true,
+        getMessage: () => typeof WebAssembly !== 'undefined'
+          ? 'Available ✓ - Required for model loading'
+          : '❌ NOT AVAILABLE - AI models cannot run without WebAssembly'
+      },
+      {
+        name: 'WebGPU',
+        test: () => typeof navigator !== 'undefined' && 'gpu' in navigator,
+        critical: false,
+        getMessage: () => {
+          if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
+            return 'Not available - Will use CPU backend (slower but works)';
+          }
+          return 'Available ✓ - Hardware acceleration possible';
+        }
+      },
+      {
+        name: 'Device Memory',
+        test: () => typeof navigator !== 'undefined' && navigator.deviceMemory >= 4,
+        critical: false,
+        getMessage: () => {
+          if (typeof navigator === 'undefined' || typeof navigator.deviceMemory !== 'number') {
+            return 'Unknown (not reported by browser) - Browser may not expose this API';
+          }
+          const memory = navigator.deviceMemory;
+          if (memory >= 8) {
+            return `${memory} GB ✓ - Excellent for running local models`;
+          } else if (memory >= 4) {
+            return `${memory} GB - Sufficient (minimum 8GB recommended for best experience)`;
+          } else {
+            return `${memory} GB - Low memory, may experience performance issues`;
+          }
+        }
+      },
+      {
+        name: 'IndexedDB',
+        test: () => typeof indexedDB !== 'undefined',
+        critical: true,
+        getMessage: () => typeof indexedDB !== 'undefined'
+          ? 'Available ✓ - Required for model caching and session storage'
+          : '❌ NOT AVAILABLE - Models cannot be cached'
+      }
+    ];
+
+    const results = document.getElementById('results');
+    const summary = document.getElementById('summary');
+    
+    let passCount = 0;
+    let failCount = 0;
+    let warnCount = 0;
+    
+    checks.forEach(check => {
+      const passed = check.test();
+      const className = passed ? 'pass' : (check.critical ? 'fail' : 'warn');
+      const icon = passed ? '✓' : (check.critical ? '✗' : '⚠');
+      
+      if (passed) passCount++;
+      else if (check.critical) failCount++;
+      else warnCount++;
+      
+      results.innerHTML += `
+        <div class="check ${className}">
+          <div class="check-title">
+            <span class="icon">${icon}</span>
+            ${check.name}
+          </div>
+          <div class="check-message">${check.getMessage()}</div>
+        </div>
+      `;
+    });
+    
+    // Generate summary
+    let summaryHTML = '<h2>Summary</h2>';
+    
+    if (failCount > 0) {
+      summaryHTML += `<p><strong>❌ Critical Issues:</strong> ${failCount} critical requirement(s) not met. DevMate cannot run properly.</p>`;
+      summaryHTML += `<p>Please use a modern browser (Chrome 113+, Edge 113+, or Firefox 115+) to run DevMate.</p>`;
+    } else if (warnCount > 0) {
+      summaryHTML += `<p><strong>✓ Ready to Run</strong> - All critical requirements met!</p>`;
+      summaryHTML += `<p><strong>⚠ ${warnCount} optimization(s) available:</strong> DevMate will work but may run slower. For best performance, enable cross-origin isolation by serving with proper HTTP headers.</p>`;
+      summaryHTML += `<p>See README.md for deployment instructions.</p>`;
+    } else {
+      summaryHTML += `<p><strong>✓ Perfect Configuration!</strong></p>`;
+      summaryHTML += `<p>All requirements met. DevMate will run at optimal performance with multi-threaded inference.</p>`;
+    }
+    
+    summaryHTML += `<p style="margin-top: 20px;"><strong>Status:</strong> ${passCount} passed, ${warnCount} warnings, ${failCount} failed</p>`;
+    
+    // Add cross-origin isolation instructions if needed
+    if (!crossOriginIsolated) {
+      summaryHTML += `
+        <details style="margin-top: 20px;">
+          <summary style="cursor: pointer; color: #ffaa00;">How to enable cross-origin isolation?</summary>
+          <div style="margin-top: 10px; padding: 10px; background: #1a1a1f; border-radius: 5px;">
+            <p>For production deployment, configure your web server to send these headers:</p>
+            <pre style="background: #0a0a0f; padding: 10px; border-radius: 5px; overflow-x: auto;">
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: credentialless</pre>
+            <p style="margin-top: 10px;">For development with Vite, these headers are already configured in <span class="code">vite.config.js</span>.</p>
+          </div>
+        </details>
+      `;
+    }
+    
+    summary.innerHTML = summaryHTML;
+    
+    // Console output for debugging
+    console.log('[DevMate Environment Check]');
+    console.log('Cross-Origin Isolated:', crossOriginIsolated);
+    console.log('SharedArrayBuffer:', typeof SharedArrayBuffer !== 'undefined');
+    console.log('WebAssembly:', typeof WebAssembly !== 'undefined');
+    console.log('Device Memory:', navigator.deviceMemory || 'unknown');
+  </script>
+</body>
+</html>

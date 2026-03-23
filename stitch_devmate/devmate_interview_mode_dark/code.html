@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DevMate - Interview Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#00363d",
+              "on-primary-fixed-variant": "#004f58",
+              "surface-container-lowest": "#0a0e14",
+              "surface-bright": "#353940",
+              "secondary": "#cdbdff",
+              "primary-fixed": "#9cf0ff",
+              "primary": "#c3f5ff",
+              "surface-tint": "#00daf3",
+              "on-tertiary-container": "#5e5473",
+              "on-primary-fixed": "#001f24",
+              "on-surface": "#dfe2eb",
+              "inverse-on-surface": "#2d3137",
+              "surface-container": "#1c2026",
+              "primary-container": "#00e5ff",
+              "on-error-container": "#ffdad6",
+              "background": "#10141a",
+              "on-secondary-fixed": "#20005f",
+              "tertiary-fixed-dim": "#cdc1e5",
+              "on-background": "#dfe2eb",
+              "surface-container-high": "#262a31",
+              "surface-dim": "#10141a",
+              "error": "#ffb4ab",
+              "on-tertiary-fixed-variant": "#4b4260",
+              "on-secondary-container": "#c0acff",
+              "on-tertiary-fixed": "#1f1732",
+              "tertiary": "#f2e8ff",
+              "error-container": "#93000a",
+              "tertiary-container": "#d7caf0",
+              "primary-fixed-dim": "#00daf3",
+              "on-error": "#690005",
+              "outline": "#849396",
+              "tertiary-fixed": "#eaddff",
+              "on-secondary-fixed-variant": "#4f00d0",
+              "surface-container-highest": "#31353c",
+              "surface": "#10141a",
+              "on-secondary": "#370096",
+              "on-tertiary": "#342c49",
+              "secondary-container": "#5203d5",
+              "on-primary-container": "#00626e",
+              "secondary-fixed": "#e8deff",
+              "outline-variant": "#3b494c",
+              "surface-variant": "#31353c",
+              "secondary-fixed-dim": "#cdbdff",
+              "surface-container-low": "#181c22",
+              "on-surface-variant": "#bac9cc",
+              "inverse-primary": "#006875",
+              "inverse-surface": "#dfe2eb"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(49, 53, 60, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-pulse {
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Bar -->
+<nav class="bg-[#181c22] shadow-xl flex justify-between items-center w-full px-6 py-3 h-16 fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tighter text-[#c3f5ff] drop-shadow-[0_0_8px_rgba(0,229,255,0.4)] font-headline">DevMate</span>
+<div class="hidden md:flex items-center gap-6 ml-4">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-high text-[#00e5ff] border-b-2 border-[#00e5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>Interview Mode</span>
+</div>
+<div class="flex items-center gap-4 text-[#bac9cc] font-headline text-sm">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span class="font-mono">24:42</span>
+</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-sm hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all active:scale-95">
+<span>Submit Code</span>
+</button>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg text-[#bac9cc] hover:bg-[#262a31] transition-all"><span class="material-symbols-outlined">dark_mode</span></button>
+<button class="p-2 rounded-lg text-[#bac9cc] hover:bg-[#262a31] transition-all"><span class="material-symbols-outlined">info</span></button>
+<button class="p-2 rounded-lg text-[#bac9cc] hover:bg-[#262a31] transition-all"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</div>
+</nav>
+<!-- Side Navigation Bar (Hidden on small, icon-only on medium) -->
+<aside class="fixed left-0 top-0 h-full w-20 md:w-64 bg-[#10141a] border-r border-[#3b494c]/15 flex flex-col pt-20 z-40 transition-all duration-200 ease-in-out">
+<div class="flex flex-col gap-2 px-4">
+<button class="flex items-center gap-4 p-3 rounded-lg bg-gradient-to-r from-[#5203d5]/20 to-transparent text-[#c0acff] border-l-4 border-[#00e5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined">description</span>
+<span class="hidden md:block">Explain</span>
+</button>
+<button class="flex items-center gap-4 p-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined">bug_report</span>
+<span class="hidden md:block">Debug</span>
+</button>
+<button class="flex items-center gap-4 p-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined">bolt</span>
+<span class="hidden md:block">Optimize</span>
+</button>
+<button class="flex items-center gap-4 p-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="hidden md:block">Document</span>
+</button>
+</div>
+<div class="mt-auto pb-8 px-4 flex flex-col gap-2">
+<button class="flex items-center gap-4 p-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined">settings</span>
+<span class="hidden md:block">Settings</span>
+</button>
+<button class="flex items-center gap-4 p-3 rounded-lg text-[#bac9cc] hover:bg-[#262a31]/50 hover:text-[#c3f5ff] font-headline text-sm font-medium">
+<span class="material-symbols-outlined">help</span>
+<span class="hidden md:block">Support</span>
+</button>
+</div>
+</aside>
+<!-- Main Workspace Container -->
+<main class="pl-20 md:pl-64 pt-16 h-screen flex overflow-hidden">
+<!-- Left Panel: Question Panel -->
+<section class="w-1/4 h-full bg-surface-container-low border-r border-outline-variant/15 flex flex-col">
+<div class="p-6 overflow-y-auto">
+<div class="flex items-center justify-between mb-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-md text-xs font-bold uppercase tracking-widest">Medium</span>
+<span class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">history</span> 2d ago
+                    </span>
+</div>
+<h1 class="text-2xl font-headline font-bold text-primary mb-6">Reverse a Linked List</h1>
+<div class="prose prose-invert max-w-none text-sm leading-relaxed text-on-surface-variant">
+<p class="mb-4">Given the <code>head</code> of a singly linked list, reverse the list, and return <i>the reversed list</i>.</p>
+<div class="bg-surface-container-lowest p-4 rounded-lg mb-6 border border-outline-variant/10">
+<p class="text-xs font-bold text-primary mb-2 uppercase tracking-tighter">Example 1:</p>
+<img class="w-full rounded mb-3 opacity-80" data-alt="Visual representation of a singly linked list structure" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJD4dDFet6q30U2EFc8BLbyat-wWx1aqXnHyIBrZUxUMyQeHyk8D56HaksTYwpNf5CRMXkBswccG1Vkvy7my5i_tB3F5lwBKZYQpxWcEJiX5UQlza8d9_CzVbGURJZb6Y87KSgkGH0QQzq4w_U0m8TXk-JF4UKe-Occ0noinKP83fs7NOxUFR71uZbMn2UEQiMWU4gWo5Pl9w4FHTIPQSV7CocKUE2BbF0wvvMREXoJ7A_2o2cXZfRyhymVA_16GBLCGR36IDHeP4c"/>
+<p class="font-mono text-xs">Input: head = [1,2,3,4,5]<br/>Output: [5,4,3,2,1]</p>
+</div>
+<h3 class="text-on-surface font-headline font-semibold mb-2">Constraints:</h3>
+<ul class="list-disc pl-5 space-y-1 mb-6 text-xs opacity-70">
+<li>The number of nodes in the list is the range [0, 5000].</li>
+<li>-5000 ≤ Node.val ≤ 5000</li>
+</ul>
+<div class="p-4 rounded-lg bg-surface-container-high border-l-4 border-primary/40">
+<p class="text-xs italic"><strong>Follow up:</strong> A linked list can be reversed either iteratively or recursively. Could you implement both?</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Center Panel: Interactive Code Editor -->
+<section class="flex-1 h-full flex flex-col bg-surface-container-lowest">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-low border-b border-outline-variant/10">
+<div class="flex items-center gap-3">
+<span class="text-xs font-mono text-primary-fixed">solution.py</span>
+<span class="text-[10px] text-on-surface-variant/40">Python 3.11</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded hover:bg-surface-container-highest transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">play_arrow</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-highest transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">content_copy</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-highest transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">refresh</span></button>
+</div>
+</div>
+<!-- Code Editor Well -->
+<div class="flex-1 p-6 font-mono text-sm leading-relaxed overflow-auto relative">
+<div class="flex gap-4">
+<div class="text-on-surface-variant/20 text-right select-none">
+                        1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16
+                    </div>
+<div class="flex-1">
+<span class="text-secondary">class</span> <span class="text-primary-container">Solution</span>:<br/>
+                            <span class="text-secondary">def</span> <span class="text-primary-container">reverseList</span>(<span class="text-on-surface">self, head: Optional[ListNode]</span>) -&gt; <span class="text-on-surface">Optional[ListNode]:</span><br/>
+                                <span class="text-outline-variant"># Initialize prev and curr pointers</span><br/>
+                                prev, curr = <span class="text-secondary">None</span>, head<br/>
+<br/>
+                                <span class="text-secondary">while</span> curr:<br/>
+                                    nxt = curr.next <span class="text-outline-variant"># Store next node</span><br/>
+                                    curr.next = prev <span class="text-outline-variant"># Reverse pointer</span><br/>
+                                    prev = curr<br/>
+                                    curr = nxt<br/>
+<br/>
+                                <span class="text-secondary">return</span> prev<br/>
+<span class="animate-pulse border-r-2 border-primary ml-1 h-5 inline-block align-middle"></span>
+</div>
+</div>
+<!-- Glassmorphism Overlay (Floating Interaction) -->
+<div class="absolute bottom-6 right-6 glass-panel rounded-xl p-4 border border-outline-variant/20 shadow-2xl flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center glow-pulse">
+<span class="material-symbols-outlined text-on-primary">smart_toy</span>
+</div>
+<div class="pr-2">
+<p class="text-xs font-bold text-primary tracking-tight">AI Assistant</p>
+<p class="text-[10px] text-on-surface-variant">Analyzing your logic...</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Panel: AI Feedback Panel -->
+<section class="w-80 h-full bg-surface-container-low border-l border-outline-variant/15 flex flex-col">
+<div class="p-6 flex flex-col gap-6 overflow-y-auto">
+<!-- Progressive Hints Section -->
+<div>
+<h3 class="text-xs font-bold text-outline uppercase tracking-widest mb-4">Hints</h3>
+<div class="space-y-3">
+<div class="p-3 rounded-lg bg-surface-container-highest border border-outline-variant/10 text-xs">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px] text-primary">lightbulb</span>
+<span class="font-bold">Hint 1</span>
+</div>
+<p class="text-on-surface-variant leading-relaxed">Consider using three pointers: prev, curr, and next.</p>
+</div>
+<div class="p-3 rounded-lg bg-surface-container text-xs opacity-50 border border-outline-variant/5">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="font-bold">Hint 2</span>
+</div>
+<button class="text-[10px] text-primary underline mt-1">Unlock Hint (5 DevCoins)</button>
+</div>
+</div>
+</div>
+<!-- Complexity Analysis -->
+<div>
+<h3 class="text-xs font-bold text-outline uppercase tracking-widest mb-4">Live Analysis</h3>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant">Time Complexity</span>
+<span class="text-sm font-mono text-primary">O(n)</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/10 flex flex-col gap-1">
+<span class="text-[10px] text-on-surface-variant">Space Complexity</span>
+<span class="text-sm font-mono text-primary">O(1)</span>
+</div>
+</div>
+</div>
+<!-- Evaluation Panel -->
+<div class="p-4 rounded-xl bg-gradient-to-br from-surface-container-highest to-surface-container border border-primary/20">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-bold text-primary">Evaluation</h3>
+<span class="text-[10px] font-mono bg-on-primary-fixed-variant/40 text-primary-fixed px-2 py-0.5 rounded">PENDING SUBMISSION</span>
+</div>
+<div class="space-y-2">
+<div class="h-1.5 w-full bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-0 transition-all duration-1000"></div>
+</div>
+<p class="text-[11px] text-on-surface-variant leading-relaxed">Run the code to see automated evaluation and edge case performance.</p>
+</div>
+</div>
+<!-- Floating AI indicator glow effect element -->
+<div class="mt-auto pt-8">
+<div class="p-4 glass-panel rounded-2xl border border-outline-variant/30 flex items-center justify-center relative overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-primary mr-2">forum</span>
+<span class="text-xs font-bold text-on-surface">Ask AI for Feedback</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating AI Prompt (Interaction Layer) -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[500px] max-w-[90vw] z-50">
+<div class="glass-panel border border-outline-variant/20 shadow-2xl rounded-full p-2 flex items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">auto_fix_high</span>
+</div>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm placeholder:text-outline-variant font-body" placeholder="Explain the recursive approach..." type="text"/>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</body></html>
