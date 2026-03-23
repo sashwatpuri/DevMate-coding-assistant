@@ -113,7 +113,7 @@ export default function VisualizeTab({ result, code, isLoading }) {
 
       <section className="visualize-card panel-card">
         <h3 className="visualize-card-title panel-card-title">Execution Flow Graph</h3>
-        <div className="visualize-card-body panel-card-body">
+        <div className="visualize-card-body panel-card-body" style={{ minHeight: "450px" }}>
           <FlowGraph data={{ nodes: flowNodes, edges: flowEdges }} isLoading={isLoading} />
         </div>
       </section>
