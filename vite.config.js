@@ -34,7 +34,7 @@ function copyRunAnywhereWasmPlugin() {
       }
 
       const sherpaSourceDir = path.join(onnxWasmDir, "sherpa");
-      const sherpaOutputDir = path.join(assetsDir, "sherpa");
+      const sherpaOutputDir = assetsDir;
       if (fs.existsSync(sherpaSourceDir)) {
         fs.mkdirSync(sherpaOutputDir, { recursive: true });
         for (const fileName of fs.readdirSync(sherpaSourceDir)) {
