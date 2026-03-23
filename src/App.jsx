@@ -15,6 +15,7 @@ import { useAuth } from "./components/auth/AuthGate";
 import { appendHistory, clearHistory, loadSession, readHistory, saveSession } from "./storage/indexedDb";
 import { useSettings } from "./hooks/useSettings";
 import { useTheme } from "./hooks/useTheme";
+import { executeCode } from "./api/piston";
 
 const TAB_ITEMS = [
   { key: "Explanation", label: "Explain", icon: "explain" },
@@ -139,6 +140,7 @@ export default function App() {
   const [history, setHistory] = useState([]);
   const [interviewEvaluation, setInterviewEvaluation] = useState(null);
   const [isEvaluatingInterview, setIsEvaluatingInterview] = useState(false);
+  const [isRunningCode, setIsRunningCode] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState({ active: false, value: 0, name: "" });
@@ -270,6 +272,23 @@ export default function App() {
     setLanguage(nextLanguage);
     setInterviewEvaluation(null);
     setCode((previous) => (options.preserveCode ? previous : (!previous.trim() || previous === currentTemplate ? nextTemplate : previous)));
+  }
+
+  async function handleRunCode() {
+    setIsRunningCode(true);
+    setLastAnalysisTab(Date.now());
+    setTimeout(() => setActiveTab("Output"), 10);
+    window.__codeOutput = `Executing ${fileName} locally...\n\n`;
+    
+    try {
+      const output = await executeCode(code, language);
+      window.__codeOutput += output;
+      setLastAnalysisTab(Date.now() + 1);
+    } catch (e) {
+      window.__codeOutput += `Error: ${e.message}`;
+    } finally {
+      setIsRunningCode(false);
+    }
   }
 
   async function handleAnalyze() {
@@ -457,23 +476,7 @@ export default function App() {
             <section className="workspace-hero panel panel-stitch">
               <div className="workspace-hero-copy">
                 <p className="eyebrow">{isInterviewMode ? "Interview Simulation" : "Coding Surface"}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                  <h2>{isInterviewMode ? interviewHeadline : fileName}</h2>
-                  {!isInterviewMode && (
-                    <button 
-                      type="button" 
-                      className="primary-btn" 
-                      style={{ padding: '0.4rem 1rem', minHeight: 'unset', fontSize: '0.85rem' }} 
-                      onClick={() => {
-                        window.__codeOutput = `Executing ${fileName} locally...\n\nHello, HackXtreme!\nProcess finished with exit code 0.`;
-                        // Force a re-render for the output without needing full state definition hooks
-                        setLastAnalysisTab(Date.now());
-                        setTimeout(() => setActiveTab("Output"), 10);
-                      }}>
-                      Run Code
-                    </button>
-                  )}
-                </div>
+                <h2>{isInterviewMode ? interviewHeadline : fileName}</h2>
                 <p className="muted-text">{isInterviewMode ? "Practice against a generated prompt with timed hints and local evaluation." : `Project: local-first ${languageRuntime} session with visual reasoning and deterministic fallback.`}</p>
               </div>
               <div className="workspace-hero-metrics">
@@ -525,6 +528,8 @@ export default function App() {
                     onAnalyze={handleAnalyze}
                     onClear={handleClearCode}
                     onLoadSample={handleLoadSample}
+                    onRunCode={handleRunCode}
+                    isRunningCode={isRunningCode}
                     statusMessage={statusMessage}
                     fileName={fileName}
                     runtimeLabel={languageRuntime}

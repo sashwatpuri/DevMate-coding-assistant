@@ -95,6 +95,8 @@ export default function CodeEditorPanel({
   onAnalyze,
   onClear,
   onLoadSample,
+  onRunCode,
+  isRunningCode = false,
   statusMessage = "Ready",
   fileName = "main.js",
   runtimeLabel = "UTF-8",
@@ -274,7 +276,18 @@ export default function CodeEditorPanel({
           </label>
         </div>
 
-        <div className="editor-encoding-badge">{runtimeLabel}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <button 
+            type="button" 
+            className={`secondary-btn ${isRunningCode ? "is-busy" : ""}`} 
+            style={{ minHeight: "unset", padding: "0.2rem 0.6rem", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "0.3rem" }}
+            onClick={onRunCode}
+            disabled={isRunningCode}
+          >
+            {isRunningCode ? "Running..." : "Run Code"}
+          </button>
+          <div className="editor-encoding-badge">{runtimeLabel}</div>
+        </div>
       </div>
 
       <div className="editor-canvas" role="region" aria-label="Code editor">
