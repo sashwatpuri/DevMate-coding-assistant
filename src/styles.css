@@ -366,6 +366,9 @@ textarea {
   max-height: calc(100vh - var(--topbar-height) - 2rem);
   padding: 1rem;
   gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .sidebar-section {

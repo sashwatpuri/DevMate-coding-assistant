@@ -393,15 +393,12 @@ export default function App() {
             <div className="mode-pill"><ShellIcon name={activeTabMeta.icon} /><span>{isInterviewMode ? "Interview Mode" : "Coding Mode"}</span></div>
             <div className="runtime-badges stitch-badges">
               <span className="badge badge-runtime">{runtimeHealth}</span>
-              <span className="badge">{backendLabel}</span>
-              <span className="badge">{activeModelQuant}</span>
               <span className="badge">{voiceStateLabel}</span>
             </div>
             <span className="topbar-user-email" title={user?.email || ""}>{user?.email || "local-only@devmate"}</span>
             <button type="button" className="topbar-ghost-btn" onClick={logout}>Logout</button>
             <button type="button" className="topbar-icon-btn" aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} onClick={toggleTheme}><ShellIcon name={theme === "dark" ? "theme-light" : "theme-dark"} /></button>
             <button type="button" className="topbar-icon-btn" aria-label="Open settings" onClick={() => setSettingsOpen(true)}><ShellIcon name="settings" /></button>
-            <div className="topbar-avatar">DM</div>
           </div>
         </header>
 
