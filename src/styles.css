@@ -1416,29 +1416,6 @@ code, pre, textarea {
   overflow-y: auto;
 }
 
-.runtime-status-strip {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 0.55rem 1rem;
-  margin-bottom: 0.75rem;
-  border-radius: var(--radius-lg);
-  background: rgba(28, 32, 38, 0.72);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  flex-wrap: wrap;
-}
-
-.runtime-status-item {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-weight: 500;
-}
-
-.runtime-status-item strong {
-  color: var(--text-strong);
-}
 
 .voice-console__header,
 .voice-console__body,

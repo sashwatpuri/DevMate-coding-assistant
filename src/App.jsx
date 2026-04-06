@@ -429,14 +429,10 @@ export default function App() {
           </nav>
 
           <div className="topbar-meta">
-            <div className="runtime-badges stitch-badges">
-              <span className="badge badge-runtime">{runtimeHealth}</span>
-            </div>
             <button type="button" className={`topbar-ghost-btn ${isVoiceConsoleVisible ? "active" : ""}`} onClick={() => setIsVoiceConsoleVisible(!isVoiceConsoleVisible)}>
               {isVoiceConsoleVisible ? "Hide Voice" : "Show Voice"}
             </button>
             <button type="button" className="topbar-ghost-btn" onClick={logout}>Logout</button>
-            <button type="button" className="topbar-icon-btn" aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} onClick={toggleTheme}><ShellIcon name={theme === "dark" ? "theme-light" : "theme-dark"} /></button>
             <button type="button" className="topbar-icon-btn" aria-label="Open settings" onClick={() => setSettingsOpen(true)}><ShellIcon name="settings" /></button>
           </div>
         </header>
@@ -503,25 +499,7 @@ export default function App() {
           />
 
           <div className="shell-main">
-            <div className="runtime-status-strip">
-              <span className="runtime-status-item">
-                <span className="status-dot" style={{background: runtimeInfo?.modelReady ? 'rgba(74,222,128,0.9)' : 'rgba(255,138,138,0.9)', width: '7px', height: '7px', borderRadius: '50%', display: 'inline-block'}} />
-                {runtimeHealth}
-              </span>
-              <span className="runtime-status-item">
-                <strong>{activeModelLabel}</strong> · {backendLabel}
-              </span>
-              {result && (
-                <span className="runtime-status-item">
-                  Complexity: <strong>{complexityNow}</strong> → <strong>{optimizedComplexity}</strong>
-                </span>
-              )}
-              {result?.bug?.line && (
-                <span className="runtime-status-item" style={{color: 'var(--error)'}}>
-                  Bug at line {result.bug.line}
-                </span>
-              )}
-            </div>
+
 
             {isVoiceConsoleVisible && (
               <div className="voice-console-overlay">

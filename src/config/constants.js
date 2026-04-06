@@ -1,5 +1,4 @@
 export const TAB_ITEMS = [
-  { key: "Explanation", label: "Explain", icon: "explain" },
   { key: "Debug", label: "Debug", icon: "debug" },
   { key: "Visualize", label: "Visualize", icon: "visualize" },
   { key: "Optimize", label: "Optimize", icon: "optimize" },

@@ -25,7 +25,6 @@ const VOICE_STATE_LABELS = {
 };
 
 const QUICK_ACTIONS = [
-  { label: "Explain", tab: "Explanation" },
   { label: "Debug", tab: "Debug" },
   { label: "Optimize", tab: "Optimize" },
   { label: "Visualize", tab: "Visualize" },
