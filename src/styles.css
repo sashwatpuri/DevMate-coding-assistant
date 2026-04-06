@@ -1341,6 +1341,12 @@ textarea {
 .interview-difficulty--medium { color: #fbbf24; }
 .interview-difficulty--hard { color: #f87171; }
 
+.interview-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.65rem;
+}
+
 
 .interview-editor {
   width: 100%;
@@ -2836,6 +2842,13 @@ html[data-theme="light"] .settings-panel__status {
   background: rgba(49, 53, 60, 0.42);
   color: #f4fdff;
   box-shadow: 0 0 18px rgba(156, 240, 255, 0.14);
+}
+
+.topbar-ghost-btn.active {
+  background: rgba(0, 229, 255, 0.12);
+  color: var(--primary);
+  border-color: rgba(0, 229, 255, 0.28);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.14);
 }
 
 @keyframes auth-neon-pulse {

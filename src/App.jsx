@@ -71,7 +71,7 @@ function ShellIcon({ name }) {
   }
 }
 
-function renderTab({ activeTab, result, code, onCodeChange, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview, theme, codeOutput, isGeneratingInterview }) {
+function renderTab({ activeTab, result, code, onCodeChange, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview, theme, codeOutput, isGeneratingInterview, executionStatus }) {
   if (activeTab === "Explanation") {
     return <ExplanationTab result={result} isLoading={isAnalyzing} />;
   }
@@ -88,9 +88,15 @@ function renderTab({ activeTab, result, code, onCodeChange, language, isAnalyzin
     return (
       <div className="tab-content-stack" style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <section className="panel-card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <h3 className="panel-card-title">Execution Console</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <h3 className="panel-card-title" style={{ margin: 0, paddingBottom: 0, borderBottom: 'none' }}>Execution Console</h3>
+            {executionStatus === "live" && <span style={{ fontSize: '0.75rem', color: '#10b981', padding: '0.15rem 0.5rem', border: '1px solid #10b981', borderRadius: '1rem' }}>Live Environment</span>}
+            {executionStatus === "fallback" && <span style={{ fontSize: '0.75rem', color: '#3b82f6', padding: '0.15rem 0.5rem', border: '1px solid #3b82f6', borderRadius: '1rem' }}>Fallback Environment</span>}
+            {executionStatus === "error" && <span style={{ fontSize: '0.75rem', color: '#ef4444', padding: '0.15rem 0.5rem', border: '1px solid #ef4444', borderRadius: '1rem' }}>Graceful Fallback</span>}
+            {executionStatus === "running" && <span style={{ fontSize: '0.75rem', color: '#f59e0b', padding: '0.15rem 0.5rem', border: '1px solid #f59e0b', borderRadius: '1rem' }}>Executing...</span>}
+          </div>
           <div className="panel-card-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-            <pre className="prose-text code-block-neon" style={{ flexGrow: 1, minHeight: "350px", margin: 0, width: "100%", whiteSpace: "pre-wrap" }}>
+             <pre className="prose-text code-block-neon" style={{ flexGrow: 1, minHeight: "350px", margin: 0, width: "100%", whiteSpace: "pre-wrap" }}>
               {codeOutput || "Run code to view output."}
             </pre>
           </div>
@@ -147,6 +153,7 @@ export default function App() {
   const [codeOutput, setCodeOutput] = useState("");
   const [isVoiceConsoleVisible, setIsVoiceConsoleVisible] = useState(false);
   const [isGeneratingInterview, setIsGeneratingInterview] = useState(false);
+  const [executionStatus, setExecutionStatus] = useState("disconnected");
   const bootstrapRan = useRef(false);
   const lastInterviewCode = useRef("");
 
@@ -197,7 +204,8 @@ export default function App() {
         .then((info) => setRuntimeInfo(info))
         .catch((e) => console.error("[DevMate] Model reload failed:", e));
     }
-  }, [settings.ollamaBaseUrl, settings.ollamaModel, settings.runAnywhereModelId, handleRuntimeProgress]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.ollamaBaseUrl, settings.ollamaModel, settings.runAnywhereModelId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -267,7 +275,7 @@ export default function App() {
   const interviewHints = Array.isArray(result?.interview?.hints) ? result.interview.hints : [];
   const interviewHeadline = getProblemHeadline(result?.interview?.problem);
   const visibleHistory = history.slice(0, 4);
-  const activeContent = renderTab({ activeTab, result, code, onCodeChange: setCode, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview: handleEvaluateInterview, theme: monacoTheme, codeOutput, isGeneratingInterview });
+  const activeContent = renderTab({ activeTab, result, code, onCodeChange: setCode, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview: handleEvaluateInterview, theme: monacoTheme, codeOutput, isGeneratingInterview, executionStatus });
   const runtimeModels = Array.isArray(runtimeInfo?.availableModels) ? runtimeInfo.availableModels.map((model) => ({
     id: model.id,
     name: model.label || model.name,
@@ -286,16 +294,19 @@ export default function App() {
 
   async function handleRunCode() {
     setIsRunningCode(true);
+    setExecutionStatus("running");
     setLastAnalysisTab(Date.now());
     setTimeout(() => setActiveTab("Output"), 10);
     setCodeOutput(`Executing ${fileName} locally...\n\n`);
     
     try {
-      const output = await executeCode(code, language);
+      const { output, usedFallback } = await executeCode(code, language);
       setCodeOutput(prev => prev + output);
+      setExecutionStatus(usedFallback ? "fallback" : "live");
       setLastAnalysisTab(Date.now() + 1);
     } catch (e) {
-      setCodeOutput(prev => prev + `Error: ${e.message}`);
+      setCodeOutput(prev => prev + e.message);
+      setExecutionStatus("error");
     } finally {
       setIsRunningCode(false);
     }
@@ -490,6 +501,18 @@ export default function App() {
                     </button>
                   );
                 })}
+                <button
+                  type="button"
+                  className={`side-tab-btn ${isInterviewMode ? "active" : ""}`}
+                  aria-pressed={isInterviewMode}
+                  onClick={() => { handleEnterInterviewMode(); setIsNavOpen(false); }}
+                >
+                  <span className="side-tab-icon"><ShellIcon name="interview" /></span>
+                  <span className="side-tab-copy">
+                    <strong>Interview</strong>
+                    <span>Prompt + feedback</span>
+                  </span>
+                </button>
               </nav>
             </div>
 
