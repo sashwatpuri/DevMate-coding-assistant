@@ -50,11 +50,11 @@ export default function OptimizeTab({ result, originalCode, language, isLoading,
           <div className="kv-grid">
             <div className="kv-item">
               <span className="kv-label">Current</span>
-              <code className="kv-value">{result?.comparison?.current || "N/A"}</code>
+              <code className="kv-value">{result?.comparison?.current && result?.comparison?.current !== "Unknown" ? result.comparison.current : (result?.complexity?.time || "N/A")}</code>
             </div>
             <div className="kv-item">
               <span className="kv-label">Optimized</span>
-              <code className="kv-value">{result?.comparison?.optimized || "N/A"}</code>
+              <code className="kv-value">{result?.comparison?.optimized && result?.comparison?.optimized !== "Unknown" ? result.comparison.optimized : "N/A"}</code>
             </div>
           </div>
           {result.optimization_notes ? <p className="prose-text-neon">{result.optimization_notes}</p> : null}

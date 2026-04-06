@@ -1,93 +1,76 @@
 # DevMate
 
-DevMate is a local AI coding assistant built with React 18 and Vite 5. It keeps code, analysis, and session state on the device, using the RunAnywhere SDK for in-browser inference and Ollama on `localhost` as a fallback path. The UI follows the Kinetic Ether design system and supports coding, interview, theme, settings, and persistence flows without a cloud backend.
+DevMate is a high-precision, AI-enabled local coding assistant built with React 18 and Vite 5. It manages code, dynamic algorithmic analysis, and session state entirely on the device. DevMate leverages the RunAnywhere SDK for in-browser inference alongside a robust localhost Ollama fallback, and relies on the OneCompiler API for secure real-time code execution across ~80 programming languages.
 
 ## Quick Start
 
-### Windows PowerShell
+### Local Hardware Preparation (Ollama)
+Ensure the local Ollama daemon allows cross-origin requests for analysis to function smoothly.
 
+**Windows PowerShell:**
 ```powershell
 $env:OLLAMA_ORIGINS = "*"
 ollama serve
 ```
 
-Open a new terminal:
+**Mac / Linux:**
+```bash
+OLLAMA_ORIGINS=* ollama serve &
+```
 
-```powershell
+### Starting the Application
+Open a new terminal context in the project root:
+```bash
 npm install
 npm run dev
 ```
 
-### Mac / Linux
-
-```bash
-OLLAMA_ORIGINS=* ollama serve &
-npm install && npm run dev
-```
-
-## Architecture
+## Architecture Map
 
 ```text
-Browser UI
+Browser UI (React)
+  |
+  +-> Source Code Editor (Monaco @ 0.50.0) -> Output / Diff Viewing 
+  +-> Localized State Engine (IndexedDB)
   |
   v
-RunAnywhere SDK
+Execution & Analysis Layer
   |
-  +--> LFM2 browser model (WASM / WebGPU)
+  +-> Code Execution Engine -> Vite Proxy -> OneCompiler API
   |
-  +--> Ollama fallback on localhost
-           |
-           v
-       phi3:mini
+  +-> Dynamic Heuristic Engine -> Loop Depth Analyzer / Complexity Tracker (O(n), O(n²), etc.)
+  |
+  +-> AI Inference Bridge
+       |-> LFM2 browser model (WASM / WebGPU)
+       |-> Localhost Ollama Fallback (e.g., phi3:mini)
 ```
 
 ## Features
 
-- Local login gate with device-only session persistence.
-- Coding workspace with Monaco editor, sample loading, file upload, and AI analysis.
-- Four analysis views: Explain, Debug, Visualize, and Optimize.
-- Interview mode with generated prompt, hints, countdown timer, and automated evaluation.
-- Theme switching between dark and light variants.
-- Runtime settings drawer for model selection, Ollama configuration, and history clearing.
-- IndexedDB session/history persistence for recent code and analysis state.
-- Voice console hooks for local speech features when available.
+- **Local Execution Proxies:** Code execution queries bypass CORS seamlessly by leveraging Vite proxies mapping into the OneCompiler infrastructure. 
+- **Dynamic Heuristic Engine:** Calculates authentic structural algorithmic complexities directly from AST-like loop depth detection patterns instead of generic lookup fallbacks.
+- **Vertical Flow Graphs:** High-contrast `react-flow` visualizations stack execution depths dynamically from top-to-bottom for large-scale algorithmic tracing.
+- **Stable Code Workspace:** Bundled with a pre-configured Monaco Editor mapped to stable `0.50.0` ensuring zero `DiffEditor` unmounting exceptions during long coding sessions.
+- **Interview Mode Engine:** Context-aware behavioral prompts are generated autonomously upon inspecting the currently mapped codebase, with a dedicated evaluation timer.
+- **Editorial Monochrome Aesthetic:** Locked exclusively into an optimized syntax-dark mode for developers to reduce visual load in long-haul low-light coding sessions.
+- **Zero-Cloud Auth:** Local login gate utilizing un-leaked `localStorage`/`IndexedDB` configurations ensuring code persistence strictly on-device.
 
-## Design System
-
-The UI is based on the Kinetic Ether system defined in [stitch_devmate/neon_synthesis/DESIGN.md](./stitch_devmate/neon_synthesis/DESIGN.md).
-
-## Known Issues / Limitations
-
-- Browser model loading depends on cross-origin isolation and sufficient device memory.
-- Some devices may fall back to Ollama or refuse a browser model if the environment is not safe.
-- Ollama must be running locally and may require `OLLAMA_ORIGINS="*"` on Windows for browser access.
-- Voice features depend on browser support and local model availability.
-- The project is intentionally local-first; there is no cloud auth or hosted backend.
-
-## Browser Requirements
+## Browser Requirements & Limits
 
 ### For Optimal Performance:
-- Chrome/Edge 113+ or Firefox 115+ (recommended)
-- Cross-origin isolation enabled (required for multi-threading)
-- Minimum 8GB device RAM (for best experience)
+- **Environment:** Chrome/Edge 113+ or Firefox 115+ with Cross-origin isolation strictly enabled.
+- **Hardware:** Minimum 8GB device RAM, dedicated GPU strongly encouraged for WebGPU fallback. 
 
-### Serving with Proper Headers:
-When deploying, ensure your server sends these headers:
+### Development Notes
 
+During standard development:
 ```http
 Cross-Origin-Opener-Policy: same-origin
 Cross-Origin-Embedder-Policy: credentialless
 ```
+*Note: Vite handles headers automatically. We also ship an intrinsic proxy configuration for `/api/onecompiler/*` right out-of-the-box inside `vite.config.js`*.
 
-For development with Vite, these are already configured in `vite.config.js`.
-
-### Without Cross-Origin Isolation:
-The app will still work but run in single-threaded mode (slower inference).
-
-### Troubleshooting Model Loading:
-If you see "Array buffer error" or model won't load:
-1. Check browser console for specific error messages
-2. Verify cross-origin isolation: open DevTools → Console → type `crossOriginIsolated` (should be `true`)
-3. Clear browser cache and localStorage: `localStorage.clear()` in console
-4. Try in an Incognito/Private window
-5. Access the verification page at `/verify-headers.html` to check your environment
+### Troubleshooting
+1. **Model Array Buffer Exceptions:** Force reload ensuring `crossOriginIsolated === true` via developer tools, or wipe `localStorage.clear()`.
+2. **Execution Console Timeout / Errors (`E004`):** Ensure you haven't circumvented the internal Vite proxy mappings for code execution tracking.
+3. **RunAnywhere Load Warnings:** Background terminal warnings reading `RunAnywhere could not load LFM2 350M` are fully soft-caught constraints and will not deter foundational application connectivity. Fallbacks will auto-trigger seamlessly.

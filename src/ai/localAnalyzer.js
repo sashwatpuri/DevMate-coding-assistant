@@ -34,23 +34,57 @@ function detectFunctionName(code, language) {
   return match ? match[1] : "";
 }
 
+function getLoopDepth(lines) {
+  let maxLoopDepth = 0;
+  let loopIndents = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim() || line.trim().startsWith('//') || line.trim().startsWith('#')) continue;
+
+    const indentMatch = line.match(/^(\s*)/);
+    const indentLen = indentMatch ? indentMatch[1].length : 0;
+
+    if (line.trim() === '{') continue;
+
+    while (loopIndents.length > 0 && indentLen <= loopIndents[loopIndents.length - 1]) {
+      loopIndents.pop();
+    }
+
+    if (/\b(?:for|while)\s*\(|\bfor\s+\w+\s+in\b|\bwhile\s+.+:/.test(line)) {
+      loopIndents.push(indentLen);
+      if (loopIndents.length > maxLoopDepth) {
+        maxLoopDepth = loopIndents.length;
+      }
+    }
+  }
+
+  return maxLoopDepth;
+}
+
 function detectComplexity(lines) {
-  const source = lines.join("\n");
-  const loopCount = (source.match(/\bfor\b|\bwhile\b/g) || []).length;
-  const nestedPattern = /(for|while)[\s\S]{0,120}(for|while)/;
-  const hasNestedLoops = nestedPattern.test(source);
+  const source = lines.join("\n").toLowerCase();
+  const loopDepth = getLoopDepth(lines);
+  const recurses = source.match(/([\w_]+)\s*\([\s\S]*?\1\s*\(/) !== null;
   const hasSort = /\bsort\b|\bsorted\b/.test(source);
 
-  if (hasNestedLoops || loopCount >= 2) {
-    return { current: "O(n^2)", optimized: "O(n log n)", time: "O(n^2)", space: "O(1)" };
+  let current = "O(1)";
+  if (loopDepth > 0) {
+      if (loopDepth === 1) current = hasSort ? "O(n log n)" : "O(n)";
+      else current = `O(n^${loopDepth})`;
+  } else if (recurses) {
+      current = "O(2^n) or O(n)";
+  } else if (hasSort) {
+      current = "O(n log n)";
   }
-  if (hasSort) {
-    return { current: "O(n log n)", optimized: "O(n log n)", time: "O(n log n)", space: "O(1)" };
-  }
-  if (loopCount === 1) {
-    return { current: "O(n)", optimized: "O(n)", time: "O(n)", space: "O(1)" };
-  }
-  return { current: "O(1)", optimized: "O(1)", time: "O(1)", space: "O(1)" };
+
+  let optimized = current;
+  if (loopDepth >= 3) optimized = `O(n^${loopDepth - 1})`;
+  else if (loopDepth === 2 && !hasSort) optimized = "O(n log n) or O(n)";
+  else if (current === "O(2^n) or O(n)") optimized = "O(n) (with memoization)";
+  else if (loopDepth === 2 && hasSort) optimized = "O(n^2) (optimal)";
+
+  return { current, optimized, time: current, space: "O(n)", loopDepth };
 }
 
 function findBug(lines, language) {
@@ -193,28 +227,37 @@ function buildWalkthrough(lines) {
   return steps.map((step, index) => `Step ${index + 1}: ${step}`);
 }
 
-function optimizeCode(code, language) {
-  const source = (code || "").toLowerCase();
-  const loopCount = (source.match(/\bfor\b|\bwhile\b/g) || []).length;
-  const hasNestedLoops = /(for|while)[\s\S]{0,120}(for|while)/.test(source);
+function optimizeCode(code, language, complexityData) {
+  const depth = complexityData ? complexityData.loopDepth : 0;
+  const hasSort = /\bsort\b|\bsorted\b/.test((code || "").toLowerCase());
 
-  if (hasNestedLoops && loopCount >= 2) {
-    return {
-      code: `// Suggested Optimization:\n// Consider using Hash Maps (O(1) lookup) or Sorting (O(n log n)) to eliminate quadratic O(n^2) time complexity.\n\n${code}`,
-      notes: "Detected nested loops (O(n^2)). Consider replacing the inner loop with a Hash Map or Set for O(1) lookups, or sort the data first.",
-    };
+  if (complexityData && complexityData.optimized === "O(n^2) (optimal)" && depth === 2 && hasSort) {
+      return {
+          code: `// The current algorithm appears to be optimal.\n// It utilizes sorting with an O(n^2) two-pointer approach.\n\n${code}`,
+          notes: "Algorithm is likely already at its optimal time complexity for this problem pattern (O(n^2) utilizing sorting)."
+      }
   }
 
-  if (loopCount === 1) {
-    return {
-      code: `// Suggested Optimization:\n// Code is already O(n) linear time. See if any redundant operations can be pulled out of the loop.\n\n${code}`,
-      notes: "Detected linear scan (O(n)). Ensure loop body operations are O(1).",
-    };
+  if (depth >= 3) {
+      return {
+          code: `// Suggested Optimization:\n// Look to reduce the O(n^${depth}) complexity.\n// Can an array sort and a two-pointer approach reduce one nested loop?\n\n${code}`,
+          notes: `Detected ${depth} nested loops (O(n^${depth})). Consider optimizing the innermost loops using a Hash Map, sorting with two-pointers, or memoization.`,
+      };
+  } else if (depth === 2) {
+      return {
+          code: `// Suggested Optimization:\n// Consider using an auxiliary data structure (Hash Map / Set) or trading space for time to eliminate the nested loop, bringing time complexity down to O(n) or O(n log n).\n\n${code}`,
+          notes: "Detected nested loops (O(n^2)). If possible, decouple the loops or use a Hash Map/Set for O(1) lookups to optimize the algorithm.",
+      };
+  } else if (depth === 1) {
+      return {
+          code: `// Suggested Optimization:\n// Code appears to be O(n) linear time. See if any redundant operations can be pulled out of the loop to optimize constants.\n\n${code}`,
+          notes: "Detected linear scan (O(n)). Ensure loop body operations are O(1) and no redundant work is being done.",
+      };
   }
 
   return {
     code,
-    notes: "No obvious structural bottlenecks detected block-by-block. Ensure no hidden complexities in library calls or external dependencies.",
+    notes: "No obvious structural bottlenecks detected block-by-block. Ensure no hidden complexities exist in library calls or external dependencies.",
   };
 }
 
@@ -241,13 +284,13 @@ function generateInterview(language, code) {
   const subject = fnName ? `the '${fnName}' function` : "the provided code";
 
   return {
-    problem: `Review and optimize ${subject}. Analyze its current time and space complexity, identify potential edge cases, and propose a more efficient solution if possible.`,
+    problem: `Review and optimize ${subject}. Analyze its current algorithmic complexity, identify potential edge cases, and propose a more efficient solution.`,
     hints: [
-      "Consider the time complexity of any loops or built-in methods.",
-      "Think about edge cases (empty inputs, negative values, large inputs).",
-      "Can we use additional data structures (like HashMaps/Sets) to trade space for time?",
+      "Review the time complexity of loops and built-in methods.",
+      "Consider edge cases (empty inputs, negative values, large scales).",
+      "Can we use additional data structures to trade space for time, or avoid duplicate work?",
     ],
-    expected_approach: `Discuss the current complexities, outline edge cases, and describe the optimal data structure in ${language}.`,
+    expected_approach: `Discuss the current complexities, outline edge cases, and provide an optimal approach in ${language}.`,
   };
 }
 
@@ -287,7 +330,7 @@ export async function analyzeLocally({ code = "", language = "python", mode = "f
   const flowPack = buildFlow(lines);
   const timeline = buildVariableTimeline(lines);
   const recursionTree = buildRecursionTree(normalizedCode, normalizedLanguage);
-  const optimized = optimizeCode(normalizedCode, normalizedLanguage);
+  const optimized = optimizeCode(normalizedCode, normalizedLanguage, complexity);
   const fixedCode = applyQuickFix(normalizedCode, bug, normalizedLanguage);
 
   emit(onProgress, "local:reason", 0.62, "Building flow graph and state timeline");

@@ -1,59 +1,66 @@
-import { LANGUAGE_VERSIONS } from "../config/constants";
+import { LANGUAGE_VERSIONS, FILE_NAMES } from "../config/constants";
 
 export async function executeCode(code, languageId) {
-  const config = LANGUAGE_VERSIONS[languageId] || LANGUAGE_VERSIONS.python;
+  const langMap = {
+    "c++": "cpp",
+    "javascript": "nodejs"
+  };
   
+  const rawLang = LANGUAGE_VERSIONS[languageId]?.language || languageId;
+  const ocLanguage = langMap[rawLang] || rawLang;
+  
+  const filename = FILE_NAMES[languageId] || `main.${languageId || "txt"}`;
+
   const payload = {
-    language: config.language,
-    version: config.version,
-    files: [{ content: code }]
+    language: ocLanguage,
+    files: [
+      {
+        name: filename,
+        content: code
+      }
+    ]
   };
 
-  const primaryUrl = "https://piston.rodbox.co.uk/api/v2/piston/execute";
-  const fallbackUrl = "https://emkc.org/api/v2/piston/execute";
-
-  const fetchWithTimeout = async (url) => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (err) {
-      clearTimeout(timeoutId);
-      throw err;
-    }
-  };
-
-  let usedFallback = false;
-  let response = null;
+  const url = "/api/onecompiler/run";
 
   try {
-    try {
-      response = await fetchWithTimeout(primaryUrl);
-    } catch (e) {
-      // Catch network errors or aborts on primary to allow fallback
-      response = null;
-    }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
     
-    if (!response || [401, 403, 503].includes(response.status)) {
-      usedFallback = true;
-      response = await fetchWithTimeout(fallbackUrl);
-    }
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": "oc_44jkg6jwn_44jkg6jx7_4eca5dc03820712a9f72a5b9b9431581b390d409f8e4226f"
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
     
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new Error(`Execution environment unavailable (${response.status})`);
+      throw new Error(`Execution environment unavailable (Status: ${response.status})`);
     }
-    
+
     const result = await response.json();
-    const output = (result.run && result.run.output) ? result.run.output : "Process finished with no output.";
-    return { output, usedFallback };
+    
+    if (result.status === "failed") {
+        throw new Error(result.error || "Compilation failed");
+    }
+
+    let output = "";
+    if (result.stdout) output += result.stdout;
+    if (result.stderr) output += (output ? "\n[STDERR]:\n" : "") + result.stderr;
+    if (result.exception) output += (output ? "\n[EXCEPTION]:\n" : "") + result.exception;
+    
+    if (!output.trim()) {
+        output = "Process finished with no output.";
+    }
+
+    // Since we are using an official production API now, there is no "fallback".
+    return { output, usedFallback: false };
   } catch (error) {
-    throw new Error("Code execution service is temporarily unavailable. Your code analysis still works locally.");
+    throw new Error(error.message || "\n[ERROR] Code execution service is temporarily unavailable.");
   }
 }

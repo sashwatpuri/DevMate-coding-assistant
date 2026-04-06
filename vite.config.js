@@ -66,6 +66,13 @@ export default defineConfig({
   },
   server: {
     headers: CROSS_ORIGIN_HEADERS,
+    proxy: {
+      '/api/onecompiler': {
+        target: 'https://onecompiler.com/api/v1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/onecompiler/, '')
+      }
+    }
   },
   preview: {
     headers: CROSS_ORIGIN_HEADERS,

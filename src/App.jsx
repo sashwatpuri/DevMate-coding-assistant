@@ -192,7 +192,7 @@ export default function App() {
     if (bootstrapRan.current) {
       ensureLanguageModelLoaded(handleRuntimeProgress)
         .then((info) => setRuntimeInfo(info))
-        .catch((e) => console.error("[DevMate] Model reload failed:", e));
+        .catch((e) => console.warn("[DevMate] Model reload failed (this is non-critical):", e.message));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.ollamaBaseUrl, settings.ollamaModel, settings.runAnywhereModelId]);
