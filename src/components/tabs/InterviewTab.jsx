@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getStoredSettings } from "../../settings/settingsStore";
 
 function formatDuration(seconds) {
   const mins = Math.floor(seconds / 60)
@@ -20,7 +21,8 @@ export default function InterviewTab({
   isGeneratingProblem,
 }) {
   const [solution, setSolution] = useState("");
-  const [remaining, setRemaining] = useState(30 * 60);
+  const durationSettings = useMemo(() => (getStoredSettings().interviewTimerMinutes || 30) * 60, []);
+  const [remaining, setRemaining] = useState(durationSettings);
   const [hintIndex, setHintIndex] = useState(0);
   const [validationMessage, setValidationMessage] = useState("");
   const [prefillDismissed, setPrefillDismissed] = useState(false);
@@ -31,7 +33,7 @@ export default function InterviewTab({
 
   useEffect(() => {
     setHintIndex(0);
-    setRemaining(30 * 60);
+    setRemaining(durationSettings);
     setSolution("");
     setValidationMessage("");
   }, [interview?.problem]);
@@ -190,7 +192,7 @@ export default function InterviewTab({
                 </div>
               )}
             </div>
-            <p className="muted-text">A 30-minute countdown starts when the interview problem is generated. Your code stays local until you request feedback.</p>
+            <p className="muted-text">A {Math.floor(durationSettings/60)}-minute countdown starts when the interview problem is generated. Your code stays local until you request feedback.</p>
           </div>
         </section>
 

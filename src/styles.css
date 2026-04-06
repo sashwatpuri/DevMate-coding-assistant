@@ -117,7 +117,7 @@ code, pre, textarea {
 }
 
 ::selection {
-  background: rgba(0, 229, 255, 0.28);
+  background: rgba(212, 88, 10, 0.28);
   color: var(--text-strong);
 }
 
@@ -133,7 +133,7 @@ code, pre, textarea {
 .ether-orb--north {
   top: -12rem;
   right: -9rem;
-  background: rgba(0, 229, 255, 0.15);
+  background: rgba(212, 88, 10, 0.15);
 }
 
 .ether-orb--south {
@@ -145,7 +145,10 @@ code, pre, textarea {
 .shell-body {
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-  align-items: start;
+  gap: 0;
+  padding: 0;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .topbar {
@@ -199,7 +202,7 @@ code, pre, textarea {
   font-weight: 700;
   color: var(--text-deep);
   background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-  box-shadow: 0 0 24px rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 24px rgba(212, 88, 10, 0.18);
 }
 
 .brand-copy {
@@ -287,7 +290,7 @@ code, pre, textarea {
 
 .badge-runtime {
   color: #dffcf2;
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.16), rgba(82, 3, 213, 0.14));
+  background: linear-gradient(135deg, rgba(212, 88, 10, 0.16), rgba(82, 3, 213, 0.14));
 }
 
 .topbar-avatar {
@@ -326,7 +329,7 @@ code, pre, textarea {
 .visualize-card {
   background:
     linear-gradient(180deg, rgba(28, 32, 38, 0.92), rgba(16, 20, 26, 0.96)),
-    radial-gradient(circle at top right, rgba(0, 229, 255, 0.08), transparent 36%);
+    radial-gradient(circle at top right, rgba(212, 88, 10, 0.08), transparent 36%);
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -405,7 +408,7 @@ code, pre, textarea {
   font-weight: 700;
   cursor: pointer;
   transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
-  box-shadow: 0 0 22px rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 22px rgba(212, 88, 10, 0.18);
 }
 
 .primary-btn:hover:not(:disabled),
@@ -491,7 +494,7 @@ code, pre, textarea {
 
 .side-tab-btn.active {
   color: var(--text-strong);
-  background: linear-gradient(90deg, rgba(82, 3, 213, 0.22), rgba(0, 229, 255, 0.08));
+  background: linear-gradient(90deg, rgba(82, 3, 213, 0.22), rgba(212, 88, 10, 0.08));
   box-shadow: inset 3px 0 0 var(--primary-strong);
 }
 
@@ -564,7 +567,7 @@ code, pre, textarea {
   width: 17rem;
   height: 17rem;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 229, 255, 0.15), transparent 66%);
+  background: radial-gradient(circle, rgba(212, 88, 10, 0.15), transparent 66%);
   pointer-events: none;
 }
 
@@ -726,7 +729,7 @@ code, pre, textarea {
 }
 
 .editor-status-chip.is-busy {
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.12);
+  box-shadow: 0 0 20px rgba(212, 88, 10, 0.12);
 }
 
 .thinking-dots {
@@ -973,7 +976,7 @@ code, pre, textarea {
   height: 0.58rem;
   border-radius: 0.22rem;
   background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+  box-shadow: 0 0 14px rgba(212, 88, 10, 0.35);
 }
 
 .panel-card-body,
@@ -1030,7 +1033,7 @@ code, pre, textarea {
 
 .visualize-summary-card {
   background:
-    linear-gradient(135deg, rgba(82, 3, 213, 0.2), rgba(0, 229, 255, 0.08)),
+    linear-gradient(135deg, rgba(82, 3, 213, 0.2), rgba(212, 88, 10, 0.08)),
     linear-gradient(180deg, rgba(28, 32, 38, 0.92), rgba(16, 20, 26, 0.96));
 }
 
@@ -1099,7 +1102,7 @@ code, pre, textarea {
 .flow-graph__edge,
 .flow-graph__edge-neon {
   fill: none;
-  stroke: rgba(0, 229, 255, 0.86);
+  stroke: rgba(212, 88, 10, 0.86);
   stroke-width: 1.5;
 }
 
@@ -1109,7 +1112,7 @@ code, pre, textarea {
 
 .flow-graph__edge-glow {
   fill: none;
-  stroke: rgba(0, 229, 255, 0.24);
+  stroke: rgba(212, 88, 10, 0.24);
   stroke-width: 3;
 }
 
@@ -1121,12 +1124,12 @@ code, pre, textarea {
 .flow-graph__node-box,
 .flow-graph__node-box-neon {
   fill: rgba(16, 20, 26, 0.92);
-  stroke: rgba(0, 229, 255, 0.28);
+  stroke: rgba(212, 88, 10, 0.28);
 }
 
 .flow-graph__node-glow {
   fill: none;
-  stroke: rgba(0, 229, 255, 0.2);
+  stroke: rgba(212, 88, 10, 0.2);
 }
 
 .flow-graph__node-label,
@@ -1186,7 +1189,7 @@ code, pre, textarea {
   min-width: 2rem;
   padding: 0.18rem 0.45rem;
   border-radius: 999px;
-  background: rgba(0, 229, 255, 0.16);
+  background: rgba(212, 88, 10, 0.16);
   color: #dbf8ff;
   font-size: 0.68rem;
   font-weight: 700;
@@ -1264,7 +1267,7 @@ code, pre, textarea {
 
 .interview-panel-card--signal {
   background:
-    linear-gradient(135deg, rgba(82, 3, 213, 0.2), rgba(0, 229, 255, 0.08)),
+    linear-gradient(135deg, rgba(82, 3, 213, 0.2), rgba(212, 88, 10, 0.08)),
     linear-gradient(180deg, rgba(28, 32, 38, 0.92), rgba(16, 20, 26, 0.96));
 }
 
@@ -1281,8 +1284,8 @@ code, pre, textarea {
   gap: 0.75rem;
   padding: 0.55rem 0.85rem;
   border-radius: var(--radius-md);
-  background: rgba(0, 229, 255, 0.07);
-  border: 1px solid rgba(0, 229, 255, 0.14);
+  background: rgba(212, 88, 10, 0.07);
+  border: 1px solid rgba(212, 88, 10, 0.14);
 }
 
 .secondary-btn--xs {
@@ -1303,7 +1306,7 @@ code, pre, textarea {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  border: 3px solid rgba(0, 229, 255, 0.15);
+  border: 3px solid rgba(212, 88, 10, 0.15);
   border-top-color: var(--primary);
   animation: spin 0.75s linear infinite;
 }
@@ -1319,7 +1322,7 @@ code, pre, textarea {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
-  background: linear-gradient(90deg, rgba(82, 3, 213, 0.12), rgba(0, 229, 255, 0.08));
+  background: linear-gradient(90deg, rgba(82, 3, 213, 0.12), rgba(212, 88, 10, 0.08));
   border: 1px solid rgba(82, 3, 213, 0.22);
 }
 
@@ -1388,7 +1391,7 @@ code, pre, textarea {
   width: 38%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary), rgba(0, 229, 255, 0.38));
+  background: linear-gradient(90deg, var(--primary), rgba(212, 88, 10, 0.38));
 }
 
 .voice-console {
@@ -1397,7 +1400,7 @@ code, pre, textarea {
   padding: 1.15rem;
   border-radius: var(--radius-xl);
   background:
-    linear-gradient(135deg, rgba(82, 3, 213, 0.18), rgba(0, 229, 255, 0.1)),
+    linear-gradient(135deg, rgba(82, 3, 213, 0.18), rgba(212, 88, 10, 0.1)),
     linear-gradient(180deg, rgba(28, 32, 38, 0.92), rgba(16, 20, 26, 0.96));
  background: var(--bg-soft); border: 1px solid var(--ghost-border); border-radius: var(--radius-sm); box-shadow: none !important; }
 
@@ -1530,17 +1533,17 @@ code, pre, textarea {
   min-height: 4rem;
   padding: 0.9rem 1.1rem;
   border-radius: 1.2rem;
-  background: linear-gradient(135deg, rgba(195, 245, 255, 0.92), rgba(0, 229, 255, 0.8));
+  background: linear-gradient(135deg, rgba(195, 245, 255, 0.92), rgba(212, 88, 10, 0.8));
   color: var(--text-deep);
   font-family: "Space Grotesk", sans-serif;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 0 26px rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 26px rgba(212, 88, 10, 0.18);
 }
 
 .voice-console__mic-button.is-active {
-  background: linear-gradient(135deg, rgba(205, 189, 255, 0.94), rgba(0, 229, 255, 0.86));
+  background: linear-gradient(135deg, rgba(205, 189, 255, 0.94), rgba(212, 88, 10, 0.86));
 }
 
 .voice-console__mic-button:disabled {
@@ -1572,7 +1575,7 @@ code, pre, textarea {
 .voice-console__meter-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(195, 245, 255, 0.8), rgba(0, 229, 255, 0.96));
+  background: linear-gradient(90deg, rgba(195, 245, 255, 0.8), rgba(212, 88, 10, 0.96));
 }
 
 .voice-console__status-text,
@@ -1622,7 +1625,7 @@ code, pre, textarea {
 }
 
 .voice-console__panel--reply {
-  background: linear-gradient(135deg, rgba(82, 3, 213, 0.18), rgba(0, 229, 255, 0.08));
+  background: linear-gradient(135deg, rgba(82, 3, 213, 0.18), rgba(212, 88, 10, 0.08));
 }
 
 .voice-console__text {
@@ -1679,7 +1682,7 @@ code, pre, textarea {
 .dashboard-card--privacy {
   grid-column: span 3;
   background:
-    linear-gradient(135deg, rgba(82, 3, 213, 0.28), rgba(0, 229, 255, 0.12)),
+    linear-gradient(135deg, rgba(82, 3, 213, 0.28), rgba(212, 88, 10, 0.12)),
     linear-gradient(180deg, rgba(28, 32, 38, 0.92), rgba(16, 20, 26, 0.96));
 }
 
@@ -1697,7 +1700,7 @@ code, pre, textarea {
 
 .dashboard-icon-badge--accent {
   color: var(--primary);
-  background: rgba(0, 229, 255, 0.12);
+  background: rgba(212, 88, 10, 0.12);
 }
 
 .model-list,
@@ -1717,7 +1720,7 @@ code, pre, textarea {
 }
 
 .model-row.is-active {
-  background: linear-gradient(90deg, rgba(82, 3, 213, 0.22), rgba(0, 229, 255, 0.08));
+  background: linear-gradient(90deg, rgba(82, 3, 213, 0.22), rgba(212, 88, 10, 0.08));
 }
 
 .model-row-copy,
@@ -1775,7 +1778,7 @@ code, pre, textarea {
 .progress-bar {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(195, 245, 255, 0.8), rgba(0, 229, 255, 0.92));
+  background: linear-gradient(90deg, rgba(195, 245, 255, 0.8), rgba(212, 88, 10, 0.92));
  border-radius: 0; background: var(--primary); height: 3px; box-shadow: none !important; }
 
 .progress-bar--secondary {
@@ -1783,7 +1786,7 @@ code, pre, textarea {
 }
 
 .progress-bar.is-strong {
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.22);
+  box-shadow: 0 0 16px rgba(212, 88, 10, 0.22);
 }
 
 .privacy-list {
@@ -2272,7 +2275,7 @@ code, pre, textarea {
 }
 
 .settings-panel__option.is-active {
-  background: linear-gradient(90deg, rgba(82, 3, 213, 0.18), rgba(0, 229, 255, 0.08));
+  background: linear-gradient(90deg, rgba(82, 3, 213, 0.18), rgba(212, 88, 10, 0.08));
   box-shadow: inset 3px 0 0 var(--primary-strong);
 }
 
@@ -2640,7 +2643,7 @@ html[data-theme="light"] .settings-panel__status {
   min-height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 16% 14%, rgba(0, 229, 255, 0.16), transparent 26%),
+    radial-gradient(circle at 16% 14%, rgba(212, 88, 10, 0.16), transparent 26%),
     radial-gradient(circle at 80% 76%, rgba(82, 3, 213, 0.14), transparent 28%),
     linear-gradient(180deg, #0c1117 0%, #10141a 42%, #0c1117 100%);
   display: grid;
@@ -2689,7 +2692,7 @@ html[data-theme="light"] .settings-panel__status {
   font-weight: 700;
   color: var(--text-deep);
   background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-  box-shadow: 0 0 24px rgba(0, 229, 255, 0.24);
+  box-shadow: 0 0 24px rgba(212, 88, 10, 0.24);
 }
 
 .auth-card__title {
@@ -2734,7 +2737,7 @@ html[data-theme="light"] .settings-panel__status {
   height: 0.18rem;
   border-radius: 999px;
   background: linear-gradient(90deg, transparent, var(--primary), var(--primary-strong), transparent);
-  box-shadow: 0 0 18px rgba(0, 229, 255, 0.36);
+  box-shadow: 0 0 18px rgba(212, 88, 10, 0.36);
   animation: auth-neon-pulse 2.4s ease-in-out infinite;
 }
 
@@ -2784,8 +2787,8 @@ html[data-theme="light"] .settings-panel__status {
 .auth-input:focus-visible {
   box-shadow:
     inset 0 -2px 0 var(--primary-strong),
-    0 0 0 1px rgba(0, 229, 255, 0.1),
-    0 0 20px rgba(0, 229, 255, 0.12);
+    0 0 0 1px rgba(212, 88, 10, 0.1),
+    0 0 20px rgba(212, 88, 10, 0.12);
 }
 
 .auth-actions {
@@ -2804,7 +2807,7 @@ html[data-theme="light"] .settings-panel__status {
   font-family: "Space Grotesk", sans-serif;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 0 22px rgba(0, 229, 255, 0.16);
+  box-shadow: 0 0 22px rgba(212, 88, 10, 0.16);
   transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
 }
 
@@ -2904,10 +2907,10 @@ html[data-theme="light"] .settings-panel__status {
 }
 
 .topbar-ghost-btn.active {
-  background: rgba(0, 229, 255, 0.12);
+  background: rgba(212, 88, 10, 0.12);
   color: var(--primary);
-  border-color: rgba(0, 229, 255, 0.28);
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.14);
+  border-color: rgba(212, 88, 10, 0.28);
+  box-shadow: 0 0 14px rgba(212, 88, 10, 0.14);
 }
 
 @keyframes auth-neon-pulse {

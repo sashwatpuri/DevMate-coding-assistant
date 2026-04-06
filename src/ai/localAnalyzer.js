@@ -195,69 +195,26 @@ function buildWalkthrough(lines) {
 
 function optimizeCode(code, language) {
   const source = (code || "").toLowerCase();
-  const likelyTwoSum = source.includes("two_sum") || source.includes("twosum");
+  const loopCount = (source.match(/\bfor\b|\bwhile\b/g) || []).length;
+  const hasNestedLoops = /(for|while)[\s\S]{0,120}(for|while)/.test(source);
 
-  if (!likelyTwoSum) {
+  if (hasNestedLoops && loopCount >= 2) {
     return {
-      code,
-      notes: "No targeted rewrite applied; generated complexity guidance only.",
+      code: `// Suggested Optimization:\n// Consider using Hash Maps (O(1) lookup) or Sorting (O(n log n)) to eliminate quadratic O(n^2) time complexity.\n\n${code}`,
+      notes: "Detected nested loops (O(n^2)). Consider replacing the inner loop with a Hash Map or Set for O(1) lookups, or sort the data first.",
     };
   }
 
-  if (language === "python") {
+  if (loopCount === 1) {
     return {
-      code: `def two_sum(nums, target):
-    seen = {}
-    for i, val in enumerate(nums):
-        need = target - val
-        if need in seen:
-            return [seen[need], i]
-        seen[val] = i
-    return []
-`,
-      notes: "Converted nested loops to hash-map lookup for O(n) average time.",
-    };
-  }
-
-  if (language === "java") {
-    return {
-      code: `import java.util.*;
-
-public class Main {
-    public static int[] twoSum(int[] nums, int target) {
-        Map<Integer, Integer> seen = new HashMap<>();
-        for (int i = 0; i < nums.length; i++) {
-            int need = target - nums[i];
-            if (seen.containsKey(need)) {
-                return new int[] { seen.get(need), i };
-            }
-            seen.put(nums[i], i);
-        }
-        return new int[] {};
-    }
-}
-`,
-      notes: "HashMap strategy removes quadratic scanning.",
+      code: `// Suggested Optimization:\n// Code is already O(n) linear time. See if any redundant operations can be pulled out of the loop.\n\n${code}`,
+      notes: "Detected linear scan (O(n)). Ensure loop body operations are O(1).",
     };
   }
 
   return {
-    code: `#include <bits/stdc++.h>
-using namespace std;
-
-vector<int> twoSum(vector<int>& nums, int target) {
-    unordered_map<int, int> seen;
-    for (int i = 0; i < (int)nums.size(); ++i) {
-        int need = target - nums[i];
-        if (seen.count(need)) {
-            return {seen[need], i};
-        }
-        seen[nums[i]] = i;
-    }
-    return {};
-}
-`,
-    notes: "unordered_map turns pair search into linear pass.",
+    code,
+    notes: "No obvious structural bottlenecks detected block-by-block. Ensure no hidden complexities in library calls or external dependencies.",
   };
 }
 
@@ -279,49 +236,40 @@ function applyQuickFix(code, bug, language) {
   return code;
 }
 
-function generateInterview(language) {
+function generateInterview(language, code) {
+  const fnName = detectFunctionName(code, language);
+  const subject = fnName ? `the '${fnName}' function` : "the provided code";
+
   return {
-    problem:
-      "Given an integer array and target, return indices of two values that sum to target. Avoid brute force O(n^2).",
+    problem: `Review and optimize ${subject}. Analyze its current time and space complexity, identify potential edge cases, and propose a more efficient solution if possible.`,
     hints: [
-      "Keep a lookup map from value to index.",
-      "For each value x, check whether target - x was already seen.",
-      "Return indices immediately when a match appears.",
+      "Consider the time complexity of any loops or built-in methods.",
+      "Think about edge cases (empty inputs, negative values, large inputs).",
+      "Can we use additional data structures (like HashMaps/Sets) to trade space for time?",
     ],
-    expected_approach: `Use a hash map in ${language} for O(n) time and O(n) space.`,
+    expected_approach: `Discuss the current complexities, outline edge cases, and describe the optimal data structure in ${language}.`,
   };
 }
 
 export async function evaluateInterviewAnswer({ solution, language, interview }) {
   const source = solution || "";
-  const usesMap = /\bhash|map|dict|unordered_map|HashMap|seen\b/i.test(source);
+  const usesMap = /\bhash|map|dict|unordered_map|HashMap|seen|set|Set\b/i.test(source);
   const hasLoop = /\bfor\b|\bwhile\b/.test(source);
   const returns = /\breturn\b/.test(source);
 
   let score = 4;
   if (hasLoop) score += 2;
   if (returns) score += 1;
-  if (usesMap) score += 3;
-  if (score > 10) score = 10;
+  if (usesMap) score += 2;
+  if (source.length > 50) score += 1;
 
   await wait(180);
 
   return {
     score,
     verdict: score >= 8 ? "Strong" : score >= 6 ? "Good" : "Needs Improvement",
-    feedback: usesMap
-      ? "Your approach aligns with the expected hash-map optimization."
-      : "Try replacing nested scans with a hash-map lookup to hit O(n).",
-    optimized_answer:
-      language === "python"
-        ? `def two_sum(nums, target):
-    seen = {}
-    for i, x in enumerate(nums):
-        if target - x in seen:
-            return [seen[target - x], i]
-        seen[x] = i
-    return []`
-        : `Single-pass map strategy:\n1) iterate once\n2) check complement in map\n3) store current value/index`,
+    feedback: "Analysis of your answer based on general programming principles... " + (usesMap ? "Good use of efficient data structures." : "Consider leveraging Sets or Maps for faster lookups if applicable."),
+    optimized_answer: "A strong response clearly defines time/space complexity, handles edge cases explicitly, and utilizes optimal data structures for the given problem scenario.",
     expected_approach: interview?.expected_approach || "",
   };
 }
@@ -370,7 +318,7 @@ export async function analyzeLocally({ code = "", language = "python", mode = "f
       example_walkthrough: buildWalkthrough(lines),
       errors: bug.line ? [`Potential failure near line ${bug.line}`] : [],
       optimization_notes: optimized.notes,
-      interview: generateInterview(normalizedLanguage),
+      interview: generateInterview(normalizedLanguage, normalizedCode),
       mode,
     },
     { code: normalizedCode, language: normalizedLanguage, mode },

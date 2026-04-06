@@ -16,17 +16,7 @@ import { appendHistory, clearHistory, loadSession, readHistory, saveSession } fr
 import { useSettings } from "./hooks/useSettings";
 import { useTheme } from "./hooks/useTheme";
 import { executeCode } from "./api/piston";
-
-const TAB_ITEMS = [
-  { key: "Explanation", label: "Explain", icon: "explain" },
-  { key: "Debug", label: "Debug", icon: "debug" },
-  { key: "Visualize", label: "Visualize", icon: "visualize" },
-  { key: "Optimize", label: "Optimize", icon: "optimize" },
-  { key: "Output", label: "Output", icon: "output" },
-];
-
-const FILE_NAMES = { python: "main.py", cpp: "main.cpp", java: "Main.java", javascript: "index.js", typescript: "index.ts", c: "main.c", go: "main.go", rust: "main.rs" };
-const LANGUAGE_RUNTIME = { python: "Python 3.11", cpp: "C++17", java: "Java 21", javascript: "Node 18", typescript: "Node 18", c: "C", go: "Go 1.16", rust: "Rust 1.68" };
+import { TAB_ITEMS, FILE_NAMES, LANGUAGE_RUNTIME } from "./config/constants";
 
 function ShellIcon({ name }) {
   const commonProps = {
@@ -475,21 +465,6 @@ export default function App() {
             onClick={() => setIsNavOpen(false)}
           />
           <aside className={`shell-sidebar panel panel-stitch ${isNavOpen ? "is-open" : ""}`} aria-label="Primary navigation">
-            <div className="sidebar-section sidebar-section--header" style={{ display: 'grid', gap: '0.5rem', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Status</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span className="status-dot" style={{background: runtimeInfo?.modelReady ? 'rgba(74,222,128,0.9)' : 'rgba(255,138,138,0.9)', width: '6px', height: '6px', borderRadius: '50%', display: 'inline-block'}} />
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{activeModelLabel}</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Sessions</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{analysisCountLabel}</span>
-              </div>
-              <button type="button" className="sidebar-create-btn secondary-btn" style={{ marginTop: '0.5rem' }} onClick={handleNewSession}>New Session</button>
-            </div>
-
             <div className="sidebar-section">
               <p className="side-heading">Analysis Lenses</p>
               <nav className="side-tab-list" aria-label="Quick tab switcher">
@@ -641,7 +616,7 @@ export default function App() {
                           </h3>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', maxWidth: '380px' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
-                              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0, marginTop: '2px', boxShadow: '0 0 10px rgba(0, 229, 255, 0.3)' }}>1</div>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0, marginTop: '2px', boxShadow: '0 0 10px rgba(212, 88, 10, 0.3)' }}>1</div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                 <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Paste or load sample code</strong>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.4 }}>Bring your code into the editor or select a sample snippet from the menu.</span>

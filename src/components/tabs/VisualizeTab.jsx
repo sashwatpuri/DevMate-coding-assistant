@@ -74,7 +74,17 @@ export default function VisualizeTab({ result, code, isLoading }) {
   }
 
   if (!result) {
-    return <div className="tab-empty">Analyze code to see results</div>;
+    return (
+      <div className="tab-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '400px', opacity: 0.6 }}>
+        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div className="skeleton skeleton-block" style={{ width: '120px', height: '80px', borderRadius: '8px' }} />
+          <div className="skeleton skeleton-block" style={{ width: '120px', height: '80px', borderRadius: '8px' }} />
+          <div className="skeleton skeleton-block" style={{ width: '120px', height: '80px', borderRadius: '8px' }} />
+        </div>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--text-main)', fontFamily: '"Syne", sans-serif' }}>Execution Visualization</h3>
+        <p style={{ maxWidth: '300px', textAlign: 'center', fontSize: '0.85rem' }}>Run an analysis to generate execution flow graphs, variable timelines, and syntax recursion trees.</p>
+      </div>
+    );
   }
 
   return (
@@ -113,7 +123,7 @@ export default function VisualizeTab({ result, code, isLoading }) {
 
       <section className="visualize-card panel-card">
         <h3 className="visualize-card-title panel-card-title">Execution Flow Graph</h3>
-        <div className="visualize-card-body panel-card-body" style={{ minHeight: "700px" }}>
+        <div className="visualize-card-body panel-card-body" style={{ minHeight: "auto" }}>
           <FlowGraph data={{ nodes: flowNodes, edges: flowEdges }} isLoading={isLoading} />
         </div>
       </section>

@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import LoginPage from "./LoginPage";
+import { getStoredSettings } from "../../settings/settingsStore";
 
 const AUTH_SESSION_KEY = "devmate_session";
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 const AuthContext = createContext({
   isAuthenticated: false,
@@ -26,7 +26,8 @@ function readSession() {
       return null;
     }
 
-    if (Date.now() - Number(session.createdAt) > SESSION_TTL_MS) {
+    const sessionTtlMs = (getStoredSettings().sessionTtlHours || 24) * 60 * 60 * 1000;
+    if (Date.now() - Number(session.createdAt) > sessionTtlMs) {
       window.localStorage.removeItem(AUTH_SESSION_KEY);
       return null;
     }

@@ -1,9 +1,9 @@
 import React, { memo, useMemo } from "react";
 
-const DEFAULT_NODE_WIDTH = 220;
-const DEFAULT_NODE_HEIGHT = 75;
-const HORIZONTAL_GAP = 120;
-const VERTICAL_GAP = 60;
+const DEFAULT_NODE_WIDTH = 160;
+const DEFAULT_NODE_HEIGHT = 50;
+const HORIZONTAL_GAP = 200;
+const VERTICAL_GAP = 80;
 const CANVAS_PADDING = 32;
 
 const isFiniteNumber = (value) => Number.isFinite(Number(value));
@@ -119,8 +119,8 @@ const layoutNodes = (rawNodes, rawEdges) => {
     const row = grouped.get(level) ?? [];
     return row.map((node, rowIndex) => ({
       ...node,
-      x: CANVAS_PADDING + level * (DEFAULT_NODE_WIDTH + HORIZONTAL_GAP),
-      y: CANVAS_PADDING + rowIndex * (DEFAULT_NODE_HEIGHT + VERTICAL_GAP),
+      x: CANVAS_PADDING + rowIndex * (DEFAULT_NODE_WIDTH + HORIZONTAL_GAP),
+      y: CANVAS_PADDING + level * (DEFAULT_NODE_HEIGHT + VERTICAL_GAP),
     }));
   });
 };
@@ -138,24 +138,24 @@ const getCanvasBounds = (nodes) => {
 };
 
 const getEdgePoints = (sourceNode, targetNode) => {
-  const sourceOnRight = sourceNode.x <= targetNode.x;
+  const sourceAbove = sourceNode.y <= targetNode.y;
   const start = {
-    x: sourceOnRight ? sourceNode.x + sourceNode.width : sourceNode.x,
-    y: sourceNode.y + sourceNode.height / 2,
+    x: sourceNode.x + sourceNode.width / 2,
+    y: sourceAbove ? sourceNode.y + sourceNode.height : sourceNode.y,
   };
   const end = {
-    x: sourceOnRight ? targetNode.x : targetNode.x + targetNode.width,
-    y: targetNode.y + targetNode.height / 2,
+    x: targetNode.x + targetNode.width / 2,
+    y: sourceAbove ? targetNode.y : targetNode.y + targetNode.height,
   };
-  const curvature = Math.max(Math.abs(end.x - start.x) * 0.4, 30);
+  const curvature = Math.max(Math.abs(end.y - start.y) * 0.4, 30);
   const d = [
     `M ${start.x} ${start.y}`,
-    `C ${start.x + (sourceOnRight ? curvature : -curvature)} ${start.y},`,
-    `${end.x + (sourceOnRight ? -curvature : curvature)} ${end.y},`,
+    `C ${start.x} ${start.y + (sourceAbove ? curvature : -curvature)},`,
+    `${end.x} ${end.y + (sourceAbove ? -curvature : curvature)},`,
     `${end.x} ${end.y}`,
   ].join(" ");
 
-  return { start, end, d };
+  return { start, end, d, sourceAbove };
 };
 
 function FlowGraph({
@@ -257,7 +257,7 @@ function FlowGraph({
           const sourceNode = nodeById.get(edge.source);
           const targetNode = nodeById.get(edge.target);
           if (!sourceNode || !targetNode) return null;
-          const { d, start, end } = getEdgePoints(sourceNode, targetNode);
+          const { d, start, end, sourceAbove } = getEdgePoints(sourceNode, targetNode);
 
           return (
             <g className="flow-graph__edge-group" key={edge.id}>
@@ -272,7 +272,10 @@ function FlowGraph({
               <path d={d} className="flow-graph__edge-neon" strokeWidth="1.6" />
               <polygon
                 className="flow-graph__arrow-neon"
-                points={`${end.x},${end.y} ${end.x - 8},${end.y - 5} ${end.x - 8},${end.y + 5}`}
+                points={sourceAbove 
+                  ? `${end.x},${end.y} ${end.x - 5},${end.y - 8} ${end.x + 5},${end.y - 8}`
+                  : `${end.x},${end.y} ${end.x - 5},${end.y + 8} ${end.x + 5},${end.y + 8}`
+                }
               />
             </g>
           );

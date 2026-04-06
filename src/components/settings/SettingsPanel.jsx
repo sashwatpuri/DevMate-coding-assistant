@@ -190,6 +190,35 @@ export default function SettingsPanel({
 
         <section className="settings-panel__section">
           <div className="settings-panel__section-head">
+            <h3>Timers & Sessions</h3>
+            <p className="muted-text">Configure dynamic timers and authentication timeouts.</p>
+          </div>
+
+          <label className="settings-panel__field">
+            <span>Interview Timer (Minutes)</span>
+            <input
+              type="number"
+              min="1"
+              value={settings?.interviewTimerMinutes || 30}
+              onChange={(event) => onSettingsChange?.({ interviewTimerMinutes: parseInt(event.target.value) || 30 })}
+              placeholder="30"
+            />
+          </label>
+
+          <label className="settings-panel__field">
+            <span>Auth Session TTL (Hours)</span>
+            <input
+              type="number"
+              min="1"
+              value={settings?.sessionTtlHours || 24}
+              onChange={(event) => onSettingsChange?.({ sessionTtlHours: parseInt(event.target.value) || 24 })}
+              placeholder="24"
+            />
+          </label>
+        </section>
+
+        <section className="settings-panel__section">
+          <div className="settings-panel__section-head">
             <h3>History</h3>
             <p className="muted-text">Remove persisted local analysis history from this device.</p>
           </div>
