@@ -110,6 +110,8 @@ export default function CodeEditorPanel({
   analyzingLabel = "Analyzing...",
 }) {
   const [selectedLanguage, setSelectedLanguage] = useState(language);
+  const [isOverflowOpen, setIsOverflowOpen] = useState(false);
+  const overflowRef = useRef(null);
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const decorationIdsRef = useRef([]);
@@ -133,6 +135,16 @@ export default function CodeEditorPanel({
 
   useEffect(() => {
     ensureDecorationStyles();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (overflowRef.current && !overflowRef.current.contains(event.target)) {
+        setIsOverflowOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   function applyBugHighlights() {
@@ -277,20 +289,22 @@ export default function CodeEditorPanel({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <button 
-            type="button" 
-            className={`secondary-btn ${isRunningCode ? "is-busy" : ""}`} 
-            style={{ minHeight: "unset", padding: "0.2rem 0.6rem", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "0.3rem" }}
-            onClick={onRunCode}
-            disabled={isRunningCode}
-          >
-            {isRunningCode ? "Running..." : "Run Code"}
-          </button>
           <div className="editor-encoding-badge">{runtimeLabel}</div>
         </div>
       </div>
 
-      <div className="editor-canvas" role="region" aria-label="Code editor">
+      <div className="editor-status-bar" style={{ padding: "0.4rem 1rem", borderBottom: "1px solid var(--ghost-border)", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.75rem", background: "var(--surface)", color: "var(--text-muted)" }}>
+        {isAnalyzing && (
+          <span className="thinking-dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        )}
+        <span className="status-message">{statusMessage}</span>
+      </div>
+
+      <div className="editor-canvas" role="region" aria-label="Code editor" style={{ paddingTop: "1rem" }}>
         <Editor
           height={height}
           language={selectedLanguage}
@@ -318,41 +332,63 @@ export default function CodeEditorPanel({
             disabled={isAnalyzing || !hasAnalyzeAction}
             className={`editor-analyze-btn ${isAnalyzing ? "analyzing" : ""}`}
           >
-            {isAnalyzing ? analyzingLabel : analyzeLabel}
+            {isAnalyzing ? "Running AI..." : "Run AI"}
           </button>
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={handleUploadClick}
-            disabled={isAnalyzing}
+          <button 
+            type="button" 
+            className={`secondary-btn ${isRunningCode ? "is-busy" : ""}`} 
+            onClick={onRunCode}
+            disabled={isRunningCode}
           >
-            Upload File
-          </button>
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={onClear}
-            disabled={isAnalyzing || !hasClearAction}
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            className="secondary-btn"
-            onClick={onLoadSample}
-            disabled={isAnalyzing || !hasSampleAction}
-          >
-            Sample Code
+            {isRunningCode ? "Running..." : "Run Code"}
           </button>
         </div>
 
-        <div className={`editor-status-chip ${isAnalyzing ? "is-busy" : ""}`}>
-          <span className="thinking-dots" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className="status-message">{statusMessage}</span>
+        <div className="editor-toolbar-actions" ref={overflowRef} style={{ position: "relative" }}>
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => setIsOverflowOpen(!isOverflowOpen)}
+            style={{ padding: "0.5rem", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}
+            aria-label="More options"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+
+          {isOverflowOpen && (
+            <div style={{ position: "absolute", bottom: "100%", right: 0, marginBottom: "0.5rem", background: "var(--bg-deep)", border: "1px solid var(--ghost-border)", borderRadius: "var(--radius-xl)", padding: "0.5rem", display: "flex", flexDirection: "column", gap: "0.5rem", minWidth: "160px", zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={() => { handleUploadClick(); setIsOverflowOpen(false); }}
+                disabled={isAnalyzing}
+                style={{ width: "100%", textAlign: "left", justifyContent: "flex-start", border: "none", borderRadius: "var(--radius-md)" }}
+              >
+                Upload File
+              </button>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={() => { onClear(); setIsOverflowOpen(false); }}
+                disabled={isAnalyzing || !hasClearAction}
+                style={{ width: "100%", textAlign: "left", justifyContent: "flex-start", border: "none", borderRadius: "var(--radius-md)" }}
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={() => { onLoadSample(); setIsOverflowOpen(false); }}
+                disabled={isAnalyzing || !hasSampleAction}
+                style={{ width: "100%", textAlign: "left", justifyContent: "flex-start", border: "none", borderRadius: "var(--radius-md)" }}
+              >
+                Sample Code
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </section>

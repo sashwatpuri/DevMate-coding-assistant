@@ -475,14 +475,19 @@ export default function App() {
             onClick={() => setIsNavOpen(false)}
           />
           <aside className={`shell-sidebar panel panel-stitch ${isNavOpen ? "is-open" : ""}`} aria-label="Primary navigation">
-            <div className="sidebar-section sidebar-section--intro">
-              <div className="sidebar-brand-card" style={{padding: '0.75rem'}}>
-                <div className="sidebar-brand-icon"><ShellIcon name="runtime" /></div>
-                <div>
-                  <h2 style={{fontSize: '0.95rem'}}>Local Command Deck</h2>
+            <div className="sidebar-section sidebar-section--header" style={{ display: 'grid', gap: '0.5rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Status</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span className="status-dot" style={{background: runtimeInfo?.modelReady ? 'rgba(74,222,128,0.9)' : 'rgba(255,138,138,0.9)', width: '6px', height: '6px', borderRadius: '50%', display: 'inline-block'}} />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{activeModelLabel}</span>
                 </div>
               </div>
-              <button type="button" className="sidebar-create-btn primary-btn" onClick={handleNewSession}>New Session</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>Sessions</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{analysisCountLabel}</span>
+              </div>
+              <button type="button" className="sidebar-create-btn secondary-btn" style={{ marginTop: '0.5rem' }} onClick={handleNewSession}>New Session</button>
             </div>
 
             <div className="sidebar-section">
@@ -512,14 +517,7 @@ export default function App() {
               </nav>
             </div>
 
-            <div className="sidebar-section sidebar-section--footer">
-              <p className="side-heading">Runtime State</p>
-              <div className="runtime-state-list">
-                <div className="runtime-state-card"><span className="runtime-state-label">Model</span><strong>{activeModelLabel}</strong></div>
-                <div className="runtime-state-card"><span className="runtime-state-label">Backend</span><strong>{backendLabel}</strong></div>
-                <div className="runtime-state-card"><span className="runtime-state-label">Sessions</span><strong>{analysisCountLabel}</strong></div>
-              </div>
-            </div>
+
           </aside>
 
           <button
@@ -616,16 +614,65 @@ export default function App() {
                   <nav className="tabs analysis-tabs" role="tablist" aria-label="Analysis tabs" style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem', marginTop: '0.5rem', padding: '0.75rem 1rem 0.5rem' }}>
                     {TAB_ITEMS.map((item) => {
                       const isActive = item.key === activeTab;
+                      const isDisabled = !result && !isAnalyzing && !(item.key === "Output" && (codeOutput || isRunningCode));
                       return (
-                        <button key={item.key} type="button" role="tab" aria-selected={isActive} className={`tab-btn ${isActive ? "active" : ""}`} style={{ flexShrink: 0, padding: '0.5rem 1rem', borderRadius: '6px' }} onClick={() => setActiveTab(item.key)}>
+                        <button 
+                          key={item.key} 
+                          type="button" 
+                          role="tab" 
+                          aria-selected={isActive} 
+                          disabled={isDisabled}
+                          className={`tab-btn ${isActive ? "active" : ""} ${isDisabled ? "disabled" : ""}`} 
+                          style={{ flexShrink: 0, padding: '0.5rem 1rem', borderRadius: '6px', opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s ease' }} 
+                          onClick={() => !isDisabled && setActiveTab(item.key)}
+                        >
                           <ShellIcon name={item.icon} />
                           <span>{item.label}</span>
                         </button>
                       );
                     })}
                   </nav>
-                  <div className="tab-content" role="tabpanel">
-                    <ErrorBoundary>{activeContent}</ErrorBoundary>
+                  <div className="tab-content" role="tabpanel" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: '100%' }}>
+                    <ErrorBoundary>
+                      {!result && activeTab !== "Output" && !isAnalyzing ? (
+                        <div className="analysis-placeholder" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '3rem 2rem', margin: '1rem', background: 'var(--panel-bg)', border: '1px solid var(--ghost-border)', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                          <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '2rem', fontFamily: '"Syne", sans-serif', fontWeight: 600, letterSpacing: '-0.02em' }}>
+                            Welcome to DevMate
+                          </h3>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', width: '100%', maxWidth: '380px' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0, marginTop: '2px', boxShadow: '0 0 10px rgba(0, 229, 255, 0.3)' }}>1</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Paste or load sample code</strong>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.4 }}>Bring your code into the editor or select a sample snippet from the menu.</span>
+                              </div>
+                            </div>
+                            
+                            <div style={{ width: '2px', height: '16px', background: 'var(--ghost-border)', marginLeft: '13px' }}></div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--ghost-border)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0, marginTop: '2px' }}>2</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Click Run AI</strong>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.4 }}>Initiate local analysis to process your code fully inside your browser.</span>
+                              </div>
+                            </div>
+                            
+                            <div style={{ width: '2px', height: '16px', background: 'var(--ghost-border)', marginLeft: '13px' }}></div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--ghost-border)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 700, flexShrink: 0, marginTop: '2px' }}>3</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>See explanation, debug, visualize</strong>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.4 }}>Explore the generated insights, find bugs, and see optimizations.</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        activeContent
+                      )}
+                    </ErrorBoundary>
                   </div>
                 </section>
               </main>
