@@ -31,7 +31,7 @@ export async function executeCode(code, languageId) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-API-Key": "oc_44jkg6jwn_44jkg6jx7_4eca5dc03820712a9f72a5b9b9431581b390d409f8e4226f"
+        "X-API-Key": import.meta.env.VITE_ONECOMPILER_API_KEY || ""
       },
       body: JSON.stringify(payload),
       signal: controller.signal
