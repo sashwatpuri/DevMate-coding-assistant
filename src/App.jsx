@@ -439,12 +439,9 @@ export default function App() {
           </nav>
 
           <div className="topbar-meta">
-            <div className="mode-pill"><ShellIcon name={activeTabMeta.icon} /><span>{isInterviewMode ? "Interview Mode" : "Coding Mode"}</span></div>
             <div className="runtime-badges stitch-badges">
               <span className="badge badge-runtime">{runtimeHealth}</span>
-              <span className="badge">{voiceStateLabel}</span>
             </div>
-            <span className="topbar-user-email" title={user?.email || ""}>{user?.email || "local-only@devmate"}</span>
             <button type="button" className={`topbar-ghost-btn ${isVoiceConsoleVisible ? "active" : ""}`} onClick={() => setIsVoiceConsoleVisible(!isVoiceConsoleVisible)}>
               {isVoiceConsoleVisible ? "Hide Voice" : "Show Voice"}
             </button>
@@ -479,11 +476,10 @@ export default function App() {
           />
           <aside className={`shell-sidebar panel panel-stitch ${isNavOpen ? "is-open" : ""}`} aria-label="Primary navigation">
             <div className="sidebar-section sidebar-section--intro">
-              <div className="sidebar-brand-card">
+              <div className="sidebar-brand-card" style={{padding: '0.75rem'}}>
                 <div className="sidebar-brand-icon"><ShellIcon name="runtime" /></div>
                 <div>
-                  <h2>Local Command Deck</h2>
-                  <p className="muted-text">AI-assisted coding, visualization, and interview simulation without cloud inference.</p>
+                  <h2 style={{fontSize: '0.95rem'}}>Local Command Deck</h2>
                 </div>
               </div>
               <button type="button" className="sidebar-create-btn primary-btn" onClick={handleNewSession}>New Session</button>
@@ -534,21 +530,30 @@ export default function App() {
           />
 
           <div className="shell-main">
-            <section className="workspace-hero panel panel-stitch">
-              <div className="workspace-hero-copy">
-                <p className="eyebrow">{isInterviewMode ? "Interview Simulation" : "Coding Surface"}</p>
-                <h2>{isInterviewMode ? interviewHeadline : fileName}</h2>
-                <p className="muted-text">{isInterviewMode ? "Practice against a generated prompt with timed hints and local evaluation." : `Project: local-first ${languageRuntime} session with visual reasoning and deterministic fallback.`}</p>
-              </div>
-              <div className="workspace-hero-metrics">
-                <div className="hero-metric"><span className="hero-metric-label">Current</span><strong>{complexityNow}</strong></div>
-                <div className="hero-metric"><span className="hero-metric-label">Optimized</span><strong>{optimizedComplexity}</strong></div>
-                <div className="hero-metric"><span className="hero-metric-label">Bug Line</span><strong>{result?.bug?.line || "None"}</strong></div>
-              </div>
-            </section>
+            <div className="runtime-status-strip">
+              <span className="runtime-status-item">
+                <span className="status-dot" style={{background: runtimeInfo?.modelReady ? 'rgba(74,222,128,0.9)' : 'rgba(255,138,138,0.9)', width: '7px', height: '7px', borderRadius: '50%', display: 'inline-block'}} />
+                {runtimeHealth}
+              </span>
+              <span className="runtime-status-item">
+                <strong>{activeModelLabel}</strong> · {backendLabel}
+              </span>
+              {result && (
+                <span className="runtime-status-item">
+                  Complexity: <strong>{complexityNow}</strong> → <strong>{optimizedComplexity}</strong>
+                </span>
+              )}
+              {result?.bug?.line && (
+                <span className="runtime-status-item" style={{color: 'var(--error)'}}>
+                  Bug at line {result.bug.line}
+                </span>
+              )}
+            </div>
 
             {isVoiceConsoleVisible && (
-              <VoiceConsole code={code} language={language} activeTab={activeTab} analysis={result} runtimeInfo={runtimeInfo} onAnalyze={handleAnalyze} onSetActiveTab={handleNavSelect} onRuntimeRefresh={() => setRuntimeInfo(getRuntimeInfo())} />
+              <div className="voice-console-overlay">
+                <VoiceConsole code={code} language={language} activeTab={activeTab} analysis={result} runtimeInfo={runtimeInfo} onAnalyze={handleAnalyze} onSetActiveTab={handleNavSelect} onRuntimeRefresh={() => setRuntimeInfo(getRuntimeInfo())} />
+              </div>
             )}
 
             {isInterviewMode ? (
@@ -608,11 +613,7 @@ export default function App() {
                 </section>
 
                 <section className="panel panel-stitch workspace-panel workspace-panel--analysis">
-                  <div className="panel-topline analysis-topline">
-                    <div><h2>AI Analysis</h2><p className="muted-text">Structured outputs for explanation, debugging, visualization, optimization, and interview prep.</p></div>
-                    <span className="pill pill-visualize">{activeTabMeta.label}</span>
-                  </div>
-                  <nav className="tabs analysis-tabs" role="tablist" aria-label="Analysis tabs" style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem', marginTop: '0.5rem' }}>
+                  <nav className="tabs analysis-tabs" role="tablist" aria-label="Analysis tabs" style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem', marginTop: '0.5rem', padding: '0.75rem 1rem 0.5rem' }}>
                     {TAB_ITEMS.map((item) => {
                       const isActive = item.key === activeTab;
                       return (
@@ -629,79 +630,6 @@ export default function App() {
                 </section>
               </main>
             )}
-
-            <section className="dashboard-grid" aria-label="Runtime and configuration overview">
-              <section className="dashboard-card dashboard-card--models">
-                <div className="dashboard-card-header">
-                  <div><p className="eyebrow">Settings Config</p><h3>Model Library</h3></div>
-                  <span className="dashboard-status-chip">{runtimeInfo?.modelReady ? "Model Loaded" : backendLabel}</span>
-                </div>
-                <div className="model-list">
-                  {runtimeModels.length ? runtimeModels.map((model) => (
-                    <article key={model.id} className={`model-row ${model.isActive ? "is-active" : ""}`}>
-                      <div className="model-row-icon"><ShellIcon name="runtime" /></div>
-                      <div className="model-row-copy">
-                        <div className="model-row-title"><h4>{model.name}</h4>{model.isActive ? <span>Active</span> : null}</div>
-                        <p>{model.description}</p>
-                      </div>
-                      <strong>{model.isActive ? activeModelQuant : "Standby"}</strong>
-                    </article>
-                  )) : <p className="muted-text">No models loaded</p>}
-                </div>
-              </section>
-
-              <section className="dashboard-card dashboard-card--compute">
-                <div className="dashboard-card-header">
-                  <div><p className="eyebrow">Acceleration</p><h3>Compute</h3></div>
-                  <span className="dashboard-icon-badge"><ShellIcon name="cpu" /></span>
-                </div>
-                <div className="compute-grid">
-                  <div className="compute-stat"><span>Execution Backend</span><strong>{backendLabel}</strong></div>
-                  <div className="compute-stat"><span>Local Only</span><strong>{runtimeInfo?.localOnly ? "AIR-GAPPED" : "Unknown"}</strong></div>
-                </div>
-                <div className="progress-stack">
-                  <div className="progress-row">
-                    <div className="progress-copy"><span>Model Readiness</span><strong>{modelReadinessPercent}%</strong></div>
-                    <div className="progress-track"><div className={`progress-bar ${modelReadinessPercent >= 100 ? "is-strong" : ""}`} style={{ width: `${modelReadinessPercent}%` }} /></div>
-                  </div>
-                  <div className="progress-row">
-                    <div className="progress-copy"><span>Session Momentum</span><strong>{Math.min(history.length * 12 + 28, 96)}%</strong></div>
-                    <div className="progress-track"><div className="progress-bar progress-bar--secondary" style={{ width: `${Math.min(history.length * 12 + 28, 96)}%` }} /></div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="dashboard-card dashboard-card--privacy">
-                <div className="dashboard-card-header">
-                  <div><p className="eyebrow">Privacy Vault</p><h3>On-device Guardrails</h3></div>
-                  <span className="dashboard-icon-badge dashboard-icon-badge--accent"><ShellIcon name="privacy" /></span>
-                </div>
-                <p className="prose-text">Current state: AIR-GAPPED. Source stays in-browser with IndexedDB session persistence and local inference fallback.</p>
-                <ul className="privacy-list">
-                  <li>Zero telemetry pipeline</li>
-                  <li>RunAnywhere, Ollama local server, or deterministic analyzer only</li>
-                  <li>Session history stored on this device</li>
-                </ul>
-              </section>
-
-              <section className="dashboard-card dashboard-card--history">
-                <div className="dashboard-card-header">
-                  <div><p className="eyebrow">Recent Activity</p><h3>Analyses Timeline</h3></div>
-                  <span className="dashboard-status-chip">{analysisCountLabel}</span>
-                </div>
-                {visibleHistory.length ? (
-                  <ul className="history-list">
-                    {visibleHistory.map((item, index) => (
-                      <li key={`${item.id || "history"}-${index}`}>
-                        <div className="history-item-main"><span className="history-language">{item.language?.toUpperCase()}</span><strong>{item.complexity}</strong></div>
-                        <span>Bug line: {item.bugLine || "None"}</span>
-                        <span>{formatHistoryTime(item.createdAt)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : <p className="muted-text">No previous analysis history yet.</p>}
-              </section>
-            </section>
           </div>
         </div>
       </div>
