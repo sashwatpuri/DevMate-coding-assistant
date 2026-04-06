@@ -25,7 +25,6 @@ export const COMPACT_ANALYSIS_FIELDS = Object.freeze([
   "bug",
   "complexity",
   "optimized_code",
-  "interview",
 ]);
 
 const EMPTY_RESULT = Object.freeze({
@@ -198,18 +197,6 @@ export const COMPACT_ANALYSIS_JSON_SCHEMA = Object.freeze({
       },
     },
     optimized_code: { type: "string" },
-    interview: {
-      type: "object",
-      required: [],
-      properties: {
-        problem: { type: "string" },
-        hints: {
-          type: "array",
-          items: { type: "string" },
-        },
-        expected_approach: { type: "string" },
-      },
-    },
   },
 });
 
@@ -224,6 +211,29 @@ export const INTERVIEW_EVALUATION_JSON_SCHEMA = Object.freeze({
     optimized_answer: { type: "string" },
   },
 });
+
+export const INTERVIEW_GEN_FIELDS = Object.freeze([
+  "problem",
+  "hints",
+  "expected_approach",
+  "difficulty",
+]);
+
+export const INTERVIEW_GEN_SCHEMA = Object.freeze({
+  type: "object",
+  additionalProperties: true,
+  required: [],
+  properties: {
+    problem: { type: "string" },
+    hints: {
+      type: "array",
+      items: { type: "string" },
+    },
+    expected_approach: { type: "string" },
+    difficulty: { type: "string" },
+  },
+});
+
 
 function asObject(value, fallback = {}) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : fallback;

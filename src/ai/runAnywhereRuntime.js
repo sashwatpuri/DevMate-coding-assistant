@@ -6,6 +6,8 @@ import {
   COMPACT_ANALYSIS_JSON_SCHEMA,
   FULL_ANALYSIS_JSON_SCHEMA,
   INTERVIEW_EVALUATION_JSON_SCHEMA,
+  INTERVIEW_GEN_FIELDS,
+  INTERVIEW_GEN_SCHEMA,
   REQUIRED_ANALYSIS_FIELDS,
   sanitizeStructuredAnalysis,
 } from "./schema.js";
@@ -30,6 +32,7 @@ import {
   buildCompactAnalysisPrompt,
   buildFullAnalysisPrompt,
   buildInterviewEvaluationPrompt,
+  buildInterviewPrompt,
   buildRepairPrompt,
 } from "./promptBuilders.js";
 import { buildParseError, tryParseJson } from "./structuredParser.js";
@@ -817,7 +820,7 @@ export async function analyzeCode(input) {
       expectedKeys: useCompactPrompt ? COMPACT_ANALYSIS_FIELDS : REQUIRED_ANALYSIS_FIELDS,
       label: "analysis",
       onProgress,
-      maxTokens: useCompactPrompt ? 180 : 400,
+      maxTokens: useCompactPrompt ? 800 : 1500,
       allowPartial: true,
     });
 
@@ -833,12 +836,48 @@ export async function analyzeCode(input) {
       message: "Structured output failed, switching to local deterministic analysis.",
     });
     console.warn("[DevMate] Structured output failed after retries, using local analyzer", error);
-    return analyzeLocally({ code, language, mode, onProgress });
+    return analyzeLocally({ code, language, mode, onProgress, fallbackReason: error.message || "Model failed to load or output valid JSON" });
   }
 }
 
 export function getRuntimeInfo() {
   return getRuntimeStatus();
+}
+
+export async function generateInterviewProblem({ code = "", language = "python", onProgress } = {}) {
+  await initRuntime();
+  await getOrLoadModel({ onProgress });
+
+  emit(onProgress, {
+    stage: "interview:generating",
+    progress: 0.3,
+    message: "Generating interview problem from your code...",
+  });
+
+  const INTERVIEW_GEN_SCHEMA_STR = JSON.stringify(INTERVIEW_GEN_SCHEMA);
+
+  const raw = await requestStructuredObject({
+    prompt: buildInterviewPrompt(code, language),
+    schema: INTERVIEW_GEN_SCHEMA_STR,
+    expectedKeys: INTERVIEW_GEN_FIELDS,
+    label: "interview-gen",
+    onProgress,
+    maxTokens: 600,
+    allowPartial: true,
+  });
+
+  emit(onProgress, {
+    stage: "interview:ready",
+    progress: 1,
+    message: "Interview problem ready.",
+  });
+
+  return {
+    problem: typeof raw?.problem === "string" ? raw.problem : "",
+    hints: Array.isArray(raw?.hints) ? raw.hints.filter((h) => typeof h === "string" && h.trim()) : [],
+    expected_approach: typeof raw?.expected_approach === "string" ? raw.expected_approach : "",
+    difficulty: ["Easy", "Medium", "Hard"].includes(raw?.difficulty) ? raw.difficulty : "Medium",
+  };
 }
 
 export async function evaluateInterview({ solution = "", language = "python", interview = {} } = {}) {
@@ -868,6 +907,7 @@ export default {
   analyzeCode,
   getRuntimeInfo,
   evaluateInterview,
+  generateInterviewProblem,
   ensureLanguageModelLoaded,
   ensureLanguageModel,
   getOrLoadModel,

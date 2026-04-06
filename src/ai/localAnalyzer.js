@@ -326,7 +326,7 @@ export async function evaluateInterviewAnswer({ solution, language, interview })
   };
 }
 
-export async function analyzeLocally({ code = "", language = "python", mode = "full", onProgress } = {}) {
+export async function analyzeLocally({ code = "", language = "python", mode = "full", onProgress, fallbackReason = "" } = {}) {
   const normalizedCode = typeof code === "string" ? code : String(code ?? "");
   const normalizedLanguage = String(language || "python").toLowerCase();
 
@@ -347,8 +347,9 @@ export async function analyzeLocally({ code = "", language = "python", mode = "f
 
   const structured = sanitizeStructuredAnalysis(
     {
-      explanation:
-        "Local deterministic analyzer produced structured reasoning artifacts for explanation, debugging, optimization, and visualization.",
+      explanation: fallbackReason
+        ? `Browser inference fallback: ${fallbackReason}. Proceeding with deterministic bounds analysis.`
+        : "Local deterministic analyzer produced structured reasoning artifacts for explanation, debugging, optimization, and visualization.",
       complexity: {
         time: complexity.time,
         space: complexity.space,

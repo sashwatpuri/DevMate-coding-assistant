@@ -15,11 +15,15 @@ export default function InterviewTab({
   evaluation,
   isEvaluating,
   isLoading,
+  code,
+  prefillCode,
+  isGeneratingProblem,
 }) {
   const [solution, setSolution] = useState("");
   const [remaining, setRemaining] = useState(30 * 60);
   const [hintIndex, setHintIndex] = useState(0);
   const [validationMessage, setValidationMessage] = useState("");
+  const [prefillDismissed, setPrefillDismissed] = useState(false);
 
   const normalizedLanguage = (language || "code").toUpperCase();
   const hints = useMemo(() => (Array.isArray(interview?.hints) ? interview.hints : []), [interview]);
@@ -46,6 +50,16 @@ export default function InterviewTab({
       }
     };
   }, [interview?.problem, remaining]);
+
+  if (isGeneratingProblem) {
+    return (
+      <div className="interview-generating-state">
+        <div className="interview-generating-spinner" aria-hidden="true" />
+        <p className="prose-text">Analyzing your code and generating a tailored interview problem...</p>
+        <p className="muted-text">This uses a dedicated inference pass for better quality.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -137,7 +151,7 @@ export default function InterviewTab({
   }
 
   if (!interview?.problem) {
-    return <div className="tab-empty">Analyze code to see results</div>;
+    return <div className="tab-empty">Analyze code first to generate an interview prompt, or click the Interview button above.</div>;
   }
 
   async function evaluateNow() {
@@ -169,6 +183,12 @@ export default function InterviewTab({
                 <span className="kv-label">Language</span>
                 <strong>{normalizedLanguage}</strong>
               </div>
+              {interview?.difficulty && (
+                <div className="interview-stat-card">
+                  <span className="kv-label">Difficulty</span>
+                  <strong className={`interview-difficulty interview-difficulty--${(interview.difficulty || "medium").toLowerCase()}`}>{interview.difficulty}</strong>
+                </div>
+              )}
             </div>
             <p className="muted-text">A 30-minute countdown starts when the interview problem is generated. Your code stays local until you request feedback.</p>
           </div>
@@ -219,11 +239,44 @@ export default function InterviewTab({
         <section className="panel-card interview-panel-card interview-panel-card--editor">
           <h3 className="panel-card-title">Your Solution ({normalizedLanguage})</h3>
           <div className="panel-card-body interview-solution-shell">
+            {prefillCode && !solution && !prefillDismissed && (
+              <div className="interview-prefill-banner">
+                <span className="muted-text">Start from your editor code?</span>
+                <div className="interview-prefill-actions">
+                  <button
+                    type="button"
+                    className="secondary-btn secondary-btn--xs"
+                    onClick={() => { setSolution(prefillCode); setPrefillDismissed(true); }}
+                  >
+                    Yes, use it
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-btn secondary-btn--xs"
+                    onClick={() => setPrefillDismissed(true)}
+                  >
+                    Start fresh
+                  </button>
+                </div>
+              </div>
+            )}
+            {code && !solution && prefillDismissed && (
+              <div className="interview-seed-bar">
+                <span className="muted-text">Editor has code ready.</span>
+                <button
+                  type="button"
+                  className="secondary-btn secondary-btn--xs"
+                  onClick={() => setSolution(code)}
+                >
+                  Use Editor Code
+                </button>
+              </div>
+            )}
             <textarea
               className="interview-editor"
               value={solution}
               onChange={(event) => setSolution(event.target.value)}
-              placeholder="Write your solution here..."
+              placeholder="Write your solution here, or click 'Use Editor Code' to start from the editor..."
               spellCheck={false}
               onKeyDown={(event) => {
                 if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {

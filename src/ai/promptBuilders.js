@@ -111,6 +111,31 @@ export function buildRepairPrompt(rawOutput, expectedKeys) {
   return `Return valid JSON only. Remove commentary and repair the payload so it contains these keys: ${expectedKeys.join(", ")}\n\nPayload to repair:\n${rawOutput}`;
 }
 
+export function buildInterviewPrompt(code, language) {
+  const normalizedLanguage = normalizeLanguage(language);
+  const prepared = trimCode(code);
+
+  return [
+    `You are DevMate, a mock interview problem generator.
+Study the provided source code carefully.
+Generate a unique interview challenge that is DIRECTLY inspired by the actual logic, data structures, or algorithm patterns present in this code.
+Do NOT generate a generic problem like two-sum or binary search unless the source code specifically implements that algorithm.
+The problem must be solvable in the same programming language as the source.
+
+Return valid JSON only with exactly these keys:
+problem: a full problem statement (3 to 6 sentences, standalone, no code snippets)
+hints: an array of exactly 3 progressive hint strings from abstract to concrete
+expected_approach: a single string naming the algorithm and its time and space complexity
+difficulty: one of "Easy", "Medium", or "Hard" based on the complexity of the required solution`,
+    "",
+    `Language: ${normalizedLanguage}`,
+    "",
+    "Source code to derive the interview problem from:",
+    prepared.code,
+  ].join("\n");
+}
+
+
 export function buildVoiceAssistantPrompt({
   code = "",
   language = "python",

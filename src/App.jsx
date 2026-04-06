@@ -10,7 +10,7 @@ import SettingsPanel from "./components/settings/SettingsPanel";
 import ModelDownloadProgress from "./components/ui/ModelDownloadProgress";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DEFAULT_SNIPPETS, LANGUAGE_OPTIONS } from "./constants/defaultCode";
-import { analyzeCode, evaluateInterview, getRuntimeInfo, initRuntime } from "./ai/runAnywhereRuntime";
+import { analyzeCode, evaluateInterview, generateInterviewProblem, getRuntimeInfo, initRuntime, ensureLanguageModelLoaded } from "./ai/runAnywhereRuntime";
 import { useAuth } from "./components/auth/AuthGate";
 import { appendHistory, clearHistory, loadSession, readHistory, saveSession } from "./storage/indexedDb";
 import { useSettings } from "./hooks/useSettings";
@@ -25,8 +25,8 @@ const TAB_ITEMS = [
   { key: "Output", label: "Output", icon: "output" },
 ];
 
-const FILE_NAMES = { python: "main.py", cpp: "main.cpp", java: "Main.java" };
-const LANGUAGE_RUNTIME = { python: "Python 3.11", cpp: "C++17", java: "Java 21" };
+const FILE_NAMES = { python: "main.py", cpp: "main.cpp", java: "Main.java", javascript: "index.js", typescript: "index.ts", c: "main.c", go: "main.go", rust: "main.rs" };
+const LANGUAGE_RUNTIME = { python: "Python 3.11", cpp: "C++17", java: "Java 21", javascript: "Node 18", typescript: "Node 18", c: "C", go: "Go 1.16", rust: "Rust 1.68" };
 
 function ShellIcon({ name }) {
   const commonProps = {
@@ -71,7 +71,7 @@ function ShellIcon({ name }) {
   }
 }
 
-function renderTab({ activeTab, result, code, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview, theme }) {
+function renderTab({ activeTab, result, code, onCodeChange, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview, theme, codeOutput, isGeneratingInterview }) {
   if (activeTab === "Explanation") {
     return <ExplanationTab result={result} isLoading={isAnalyzing} />;
   }
@@ -85,21 +85,20 @@ function renderTab({ activeTab, result, code, language, isAnalyzing, interviewEv
     return <OptimizeTab result={result} originalCode={code} language={language} isLoading={isAnalyzing} theme={theme} />;
   }
   if (activeTab === "Output") {
-    // eslint-disable-next-line
     return (
-      <div className="tab-content-stack" style={{ paddingTop: '1rem' }}>
-        <section className="panel-card" style={{ flexGrow: 1 }}>
+      <div className="tab-content-stack" style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <section className="panel-card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <h3 className="panel-card-title">Execution Console</h3>
-          <div className="panel-card-body">
-            <pre className="prose-text code-block-neon" style={{ minHeight: "350px", margin: 0, width: "100%", whiteSpace: "pre-wrap" }}>
-              {window.__codeOutput || "Run code to view output."}
+          <div className="panel-card-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            <pre className="prose-text code-block-neon" style={{ flexGrow: 1, minHeight: "350px", margin: 0, width: "100%", whiteSpace: "pre-wrap" }}>
+              {codeOutput || "Run code to view output."}
             </pre>
           </div>
         </section>
       </div>
     );
   }
-  return <InterviewTab interview={result?.interview} language={language} onEvaluate={onEvaluateInterview} evaluation={interviewEvaluation} isEvaluating={isEvaluatingInterview} isLoading={isAnalyzing} />;
+  return <InterviewTab interview={result?.interview} language={language} onEvaluate={onEvaluateInterview} evaluation={interviewEvaluation} isEvaluating={isEvaluatingInterview} isLoading={isAnalyzing} code={code} onCodeChange={onCodeChange} prefillCode={code} isGeneratingProblem={isGeneratingInterview} />;
 }
 
 function getFileName(language) {
@@ -145,7 +144,11 @@ export default function App() {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState({ active: false, value: 0, name: "" });
   const [modelLoadProgress, setModelLoadProgress] = useState(0);
+  const [codeOutput, setCodeOutput] = useState("");
+  const [isVoiceConsoleVisible, setIsVoiceConsoleVisible] = useState(false);
+  const [isGeneratingInterview, setIsGeneratingInterview] = useState(false);
   const bootstrapRan = useRef(false);
+  const lastInterviewCode = useRef("");
 
   const handleRuntimeProgress = useCallback((progress) => {
     if (progress?.message) {
@@ -187,7 +190,14 @@ export default function App() {
 
   useEffect(() => {
     setRuntimeInfo(getRuntimeInfo());
-  }, [settings.ollamaBaseUrl, settings.ollamaModel, settings.runAnywhereModelId]);
+    
+    // Trigger model reload on selection change if we've bootstrapped
+    if (bootstrapRan.current) {
+      ensureLanguageModelLoaded(handleRuntimeProgress)
+        .then((info) => setRuntimeInfo(info))
+        .catch((e) => console.error("[DevMate] Model reload failed:", e));
+    }
+  }, [settings.ollamaBaseUrl, settings.ollamaModel, settings.runAnywhereModelId, handleRuntimeProgress]);
 
   useEffect(() => {
     let cancelled = false;
@@ -257,7 +267,7 @@ export default function App() {
   const interviewHints = Array.isArray(result?.interview?.hints) ? result.interview.hints : [];
   const interviewHeadline = getProblemHeadline(result?.interview?.problem);
   const visibleHistory = history.slice(0, 4);
-  const activeContent = renderTab({ activeTab, result, code, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview: handleEvaluateInterview, theme: monacoTheme });
+  const activeContent = renderTab({ activeTab, result, code, onCodeChange: setCode, language, isAnalyzing, interviewEvaluation, isEvaluatingInterview, onEvaluateInterview: handleEvaluateInterview, theme: monacoTheme, codeOutput, isGeneratingInterview });
   const runtimeModels = Array.isArray(runtimeInfo?.availableModels) ? runtimeInfo.availableModels.map((model) => ({
     id: model.id,
     name: model.label || model.name,
@@ -278,14 +288,14 @@ export default function App() {
     setIsRunningCode(true);
     setLastAnalysisTab(Date.now());
     setTimeout(() => setActiveTab("Output"), 10);
-    window.__codeOutput = `Executing ${fileName} locally...\n\n`;
+    setCodeOutput(`Executing ${fileName} locally...\n\n`);
     
     try {
       const output = await executeCode(code, language);
-      window.__codeOutput += output;
+      setCodeOutput(prev => prev + output);
       setLastAnalysisTab(Date.now() + 1);
     } catch (e) {
-      window.__codeOutput += `Error: ${e.message}`;
+      setCodeOutput(prev => prev + `Error: ${e.message}`);
     } finally {
       setIsRunningCode(false);
     }
@@ -353,10 +363,36 @@ export default function App() {
     setIsNavOpen(false);
   }
 
+  async function handleEnterInterviewMode() {
+    setActiveTab("Interview Mode");
+    setIsNavOpen(false);
+    // Only re-generate if code has changed since last generation
+    const codeChanged = lastInterviewCode.current !== code;
+    const hasInterview = Boolean(result?.interview?.problem);
+    if (codeChanged || !hasInterview) {
+      lastInterviewCode.current = code;
+      setIsGeneratingInterview(true);
+      try {
+        const interview = await generateInterviewProblem({ code, language, onProgress: handleRuntimeProgress });
+        setResult((prev) => ({ ...(prev || {}), interview }));
+      } catch (error) {
+        console.error("[DevMate] Interview generation failed:", error);
+        setStatusMessage("Interview problem generation failed. Try re-entering Interview Mode.");
+      } finally {
+        setIsGeneratingInterview(false);
+      }
+    }
+  }
+
   async function handleClearHistory() {
-    await clearHistory();
-    setHistory([]);
-    setStatusMessage("Analysis history cleared.");
+    try {
+      await clearHistory();
+      setHistory([]);
+      setStatusMessage("Analysis history cleared.");
+    } catch (e) {
+      console.error("[DevMate] Failed to clear history:", e);
+      setStatusMessage("Failed to clear history.");
+    }
   }
 
   return (
@@ -386,7 +422,9 @@ export default function App() {
 
           <nav className="topbar-nav" aria-label="Primary modes">
             <button type="button" className={`topbar-link ${!isInterviewMode ? "active" : ""}`} onClick={() => setActiveTab(lastAnalysisTab)}>Coding</button>
-            <button type="button" className={`topbar-link ${isInterviewMode ? "active" : ""}`} onClick={() => setActiveTab("Interview Mode")}>Interview</button>
+            <button type="button" className={`topbar-link ${isInterviewMode ? "active" : ""}`} onClick={handleEnterInterviewMode}>
+              Interview{isGeneratingInterview ? " ..." : ""}
+            </button>
           </nav>
 
           <div className="topbar-meta">
@@ -396,6 +434,9 @@ export default function App() {
               <span className="badge">{voiceStateLabel}</span>
             </div>
             <span className="topbar-user-email" title={user?.email || ""}>{user?.email || "local-only@devmate"}</span>
+            <button type="button" className={`topbar-ghost-btn ${isVoiceConsoleVisible ? "active" : ""}`} onClick={() => setIsVoiceConsoleVisible(!isVoiceConsoleVisible)}>
+              {isVoiceConsoleVisible ? "Hide Voice" : "Show Voice"}
+            </button>
             <button type="button" className="topbar-ghost-btn" onClick={logout}>Logout</button>
             <button type="button" className="topbar-icon-btn" aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} onClick={toggleTheme}><ShellIcon name={theme === "dark" ? "theme-light" : "theme-dark"} /></button>
             <button type="button" className="topbar-icon-btn" aria-label="Open settings" onClick={() => setSettingsOpen(true)}><ShellIcon name="settings" /></button>
@@ -483,7 +524,9 @@ export default function App() {
               </div>
             </section>
 
-            <VoiceConsole code={code} language={language} activeTab={activeTab} analysis={result} runtimeInfo={runtimeInfo} onAnalyze={handleAnalyze} onSetActiveTab={handleNavSelect} onRuntimeRefresh={() => setRuntimeInfo(getRuntimeInfo())} />
+            {isVoiceConsoleVisible && (
+              <VoiceConsole code={code} language={language} activeTab={activeTab} analysis={result} runtimeInfo={runtimeInfo} onAnalyze={handleAnalyze} onSetActiveTab={handleNavSelect} onRuntimeRefresh={() => setRuntimeInfo(getRuntimeInfo())} />
+            )}
 
             {isInterviewMode ? (
               <main className="workspace workspace--interview" aria-label="Interview workspace">
@@ -546,11 +589,11 @@ export default function App() {
                     <div><h2>AI Analysis</h2><p className="muted-text">Structured outputs for explanation, debugging, visualization, optimization, and interview prep.</p></div>
                     <span className="pill pill-visualize">{activeTabMeta.label}</span>
                   </div>
-                  <nav className="tabs analysis-tabs" role="tablist" aria-label="Analysis tabs">
+                  <nav className="tabs analysis-tabs" role="tablist" aria-label="Analysis tabs" style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem', marginTop: '0.5rem' }}>
                     {TAB_ITEMS.map((item) => {
                       const isActive = item.key === activeTab;
                       return (
-                        <button key={item.key} type="button" role="tab" aria-selected={isActive} className={`tab-btn ${isActive ? "active" : ""}`} onClick={() => setActiveTab(item.key)}>
+                        <button key={item.key} type="button" role="tab" aria-selected={isActive} className={`tab-btn ${isActive ? "active" : ""}`} style={{ flexShrink: 0, padding: '0.5rem 1rem', borderRadius: '6px' }} onClick={() => setActiveTab(item.key)}>
                           <ShellIcon name={item.icon} />
                           <span>{item.label}</span>
                         </button>
