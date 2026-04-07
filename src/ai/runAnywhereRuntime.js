@@ -883,64 +883,85 @@ export async function generateInterviewProblem({ code = "", language = "python",
 export async function evaluateInterview({ solution = "", language = "python", interview = {}, onProgress } = {}) {
   emit(onProgress, { stage: "eval:start", progress: 0.05, message: "Starting interview evaluation…" });
 
+  // ── FAST PATH: model already warm ──────────────────────────────────────────
+  // If model is ready, run inference but race it against a hard timeout so a
+  // stalled WASM operation never freezes the main thread long enough for Chrome
+  // to show "Page Unresponsive".
+  if (runtimeState.initialized && runtimeState.modelReady) {
+    try {
+      emit(onProgress, { stage: "eval:inference", progress: 0.45, message: "Evaluating your solution with AI…" });
+
+      const INFERENCE_TIMEOUT_MS = 8_000;
+      const timedOut = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Inference timed out after 8 s")), INFERENCE_TIMEOUT_MS)
+      );
+
+      const response = await Promise.race([
+        requestStructuredObject({
+          prompt: buildInterviewEvaluationPrompt(interview?.problem, solution, language),
+          expectedKeys: ["score", "verdict", "feedback", "optimized_answer"],
+          schema: INTERVIEW_EVALUATION_SCHEMA,
+          label: "interview-eval",
+          onProgress,
+          maxTokens: 320,
+        }),
+        timedOut,
+      ]);
+
+      const normalized = normalizeEvaluation(response, interview);
+      if (!normalized) throw new Error("Evaluation response missing required fields.");
+
+      runtimeState.backend = BACKENDS.RUNANYWHERE;
+      runtimeState.reason = buildRunAnywhereReason();
+      emit(onProgress, { stage: "eval:done", progress: 1, message: "AI evaluation complete." });
+      return normalized;
+    } catch (llmError) {
+      // LLM failed or timed out — fall through to local fallback below
+      console.warn("[DevMate] evaluateInterview: LLM path failed.", llmError);
+    }
+  } else {
+    // ── MODEL NOT LOADED ───────────────────────────────────────────────────────
+    // Do NOT call getOrLoadModel() on a button click — WASM/WebGPU init blocks
+    // the main thread and causes Chrome's "Page Unresponsive" dialog.
+    console.info("[DevMate] evaluateInterview: model not warm, using local fallback immediately.");
+  }
+
+  // ── LOCAL FALLBACK ────────────────────────────────────────────────────────────
+  emit(onProgress, { stage: "eval:fallback", progress: 0.75, message: "Using local deterministic evaluation…" });
+
   try {
-    // Only re-initialize if the model isn't already loaded — avoids long async
-    // operations that the browser mistakes for a page-navigation event.
-    if (!runtimeState.initialized) {
-      emit(onProgress, { stage: "eval:init", progress: 0.1, message: "Initializing runtime…" });
-      await initRuntime({ onProgress });
-    }
-
-    if (!runtimeState.modelReady) {
-      emit(onProgress, { stage: "eval:model", progress: 0.2, message: "Loading language model…" });
-      await getOrLoadModel({ onProgress });
-    }
-
-    emit(onProgress, { stage: "eval:inference", progress: 0.5, message: "Evaluating your solution…" });
-
-    const response = await requestStructuredObject({
-      prompt: buildInterviewEvaluationPrompt(interview?.problem, solution, language),
-      expectedKeys: ["score", "verdict", "feedback", "optimized_answer"],
-      schema: INTERVIEW_EVALUATION_SCHEMA,
-      label: "interview-eval",
-      onProgress,
-      maxTokens: 320,
-    });
-
-    const normalized = normalizeEvaluation(response, interview);
-    if (!normalized) {
-      throw new Error("Interview evaluation response was missing required fields.");
-    }
-
-    runtimeState.backend = BACKENDS.RUNANYWHERE;
-    runtimeState.reason = buildRunAnywhereReason();
-    emit(onProgress, { stage: "eval:done", progress: 1, message: "Evaluation complete." });
-    return normalized;
-  } catch (error) {
-    console.warn("[DevMate] evaluateInterview: LLM path failed, falling back to local analysis.", error);
-    emit(onProgress, {
-      stage: "eval:fallback",
-      progress: 0.9,
-      message: "Model unavailable — using local evaluation.",
-    });
-
-    // Deterministic fallback: re-use the local analyzer to synthesize a minimal result.
     const localResult = await analyzeLocally({
       code: solution,
       language,
       mode: "interview",
       onProgress,
-      fallbackReason: error?.message || "Model failed during evaluation",
+      fallbackReason: "Model not loaded or inference timed out",
     });
 
+    emit(onProgress, { stage: "eval:done", progress: 1, message: "Local evaluation complete." });
     return normalizeEvaluation(
       {
         score: localResult?.score ?? 50,
         verdict: localResult?.verdict ?? "Partially correct — local analysis only",
-        feedback: localResult?.feedback ?? "The AI model could not be loaded. Review your solution manually.",
+        feedback:
+          localResult?.feedback ??
+          "AI model not available. Deterministic evaluation applied — review your solution manually.",
         optimized_answer: localResult?.optimized_answer ?? solution,
       },
-      interview,
+      interview
+    );
+  } catch (fallbackError) {
+    console.error("[DevMate] evaluateInterview: local fallback also failed.", fallbackError);
+    emit(onProgress, { stage: "eval:error", progress: 1, message: "Evaluation unavailable." });
+    // Last-resort safe object so the UI never crashes
+    return normalizeEvaluation(
+      {
+        score: 0,
+        verdict: "Evaluation failed",
+        feedback: "Both AI and local evaluation failed. Please check your solution and try again.",
+        optimized_answer: solution,
+      },
+      interview
     );
   }
 }
