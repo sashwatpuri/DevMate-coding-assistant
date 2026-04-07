@@ -2,8 +2,8 @@ import React, { memo, useMemo } from "react";
 
 const DEFAULT_NODE_WIDTH = 160;
 const DEFAULT_NODE_HEIGHT = 50;
-const HORIZONTAL_GAP = 200;
-const VERTICAL_GAP = 80;
+const HORIZONTAL_GAP = 60;
+const VERTICAL_GAP = 90;
 const CANVAS_PADDING = 32;
 
 const isFiniteNumber = (value) => Number.isFinite(Number(value));

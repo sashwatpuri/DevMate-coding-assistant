@@ -37,24 +37,54 @@ function detectFunctionName(code, language) {
 function getLoopDepth(lines) {
   let maxLoopDepth = 0;
   let loopIndents = [];
+  let braceDepth = 0;
+  let loopBraces = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line.trim() || line.trim().startsWith('//') || line.trim().startsWith('#')) continue;
+    if (
+      !line.trim() ||
+      line.trim().startsWith("//") ||
+      line.trim().startsWith("#")
+    )
+      continue;
 
     const indentMatch = line.match(/^(\s*)/);
     const indentLen = indentMatch ? indentMatch[1].length : 0;
+    const hasBraceLanguage = lines.some((l) => l.includes("{"));
 
-    if (line.trim() === '{') continue;
-
-    while (loopIndents.length > 0 && indentLen <= loopIndents[loopIndents.length - 1]) {
-      loopIndents.pop();
+    if (!hasBraceLanguage) {
+      while (
+        loopIndents.length > 0 &&
+        indentLen <= loopIndents[loopIndents.length - 1]
+      ) {
+        loopIndents.pop();
+      }
     }
 
-    if (/\b(?:for|while)\s*\(|\bfor\s+\w+\s+in\b|\bwhile\s+.+:/.test(line)) {
-      loopIndents.push(indentLen);
-      if (loopIndents.length > maxLoopDepth) {
-        maxLoopDepth = loopIndents.length;
+    const oBrace = (line.match(/\{/g) || []).length;
+    const cBrace = (line.match(/\}/g) || []).length;
+
+    if (hasBraceLanguage) {
+      while (
+        loopBraces.length > 0 &&
+        braceDepth + oBrace - cBrace <= loopBraces[loopBraces.length - 1]
+      ) {
+        loopBraces.pop();
+      }
+      braceDepth += oBrace - cBrace;
+    }
+
+    if (
+      /\b(?:for|while)\s*\(|\bfor\s+[\w\s,]+\s+in\b|\bwhile\s+.+:/.test(line)
+    ) {
+      if (hasBraceLanguage) {
+        loopBraces.push(braceDepth);
+        if (loopBraces.length > maxLoopDepth) maxLoopDepth = loopBraces.length;
+      } else {
+        loopIndents.push(indentLen);
+        if (loopIndents.length > maxLoopDepth)
+          maxLoopDepth = loopIndents.length;
       }
     }
   }
@@ -70,12 +100,12 @@ function detectComplexity(lines) {
 
   let current = "O(1)";
   if (loopDepth > 0) {
-      if (loopDepth === 1) current = hasSort ? "O(n log n)" : "O(n)";
-      else current = `O(n^${loopDepth})`;
+    if (loopDepth === 1) current = hasSort ? "O(n log n)" : "O(n)";
+    else current = `O(n^${loopDepth})`;
   } else if (recurses) {
-      current = "O(2^n) or O(n)";
+    current = "O(2^n) or O(n)";
   } else if (hasSort) {
-      current = "O(n log n)";
+    current = "O(n log n)";
   }
 
   let optimized = current;
@@ -94,7 +124,8 @@ function findBug(lines, language) {
     if (/for\s*\(.*;.*<=\s*[a-zA-Z_]\w*\.size\(\)/.test(line)) {
       return {
         line: i + 1,
-        reason: "Potential out-of-bounds access because loop uses <= with size().",
+        reason:
+          "Potential out-of-bounds access because loop uses <= with size().",
         failing_input: "[1, 2, 3]",
       };
     }
@@ -107,7 +138,10 @@ function findBug(lines, language) {
       };
     }
 
-    if (/\/\s*[a-zA-Z_]\w*/.test(line) && !/if|guard|assert/.test(lines.join(" "))) {
+    if (
+      /\/\s*[a-zA-Z_]\w*/.test(line) &&
+      !/if|guard|assert/.test(lines.join(" "))
+    ) {
       return {
         line: i + 1,
         reason: "Division operation appears without zero-check guard.",
@@ -126,7 +160,8 @@ function findBug(lines, language) {
 
   return {
     line: null,
-    reason: "No deterministic critical bug detected. Validate with edge-case tests.",
+    reason:
+      "No deterministic critical bug detected. Validate with edge-case tests.",
     failing_input: "Boundary values and empty input",
   };
 }
@@ -187,7 +222,10 @@ function buildVariableTimeline(lines) {
   });
 
   if (!timeline.length) {
-    timeline.push({ step: 1, values: { note: "No variable assignments detected." } });
+    timeline.push({
+      step: 1,
+      values: { note: "No variable assignments detected." },
+    });
   }
   return timeline;
 }
@@ -231,33 +269,42 @@ function optimizeCode(code, language, complexityData) {
   const depth = complexityData ? complexityData.loopDepth : 0;
   const hasSort = /\bsort\b|\bsorted\b/.test((code || "").toLowerCase());
 
-  if (complexityData && complexityData.optimized === "O(n^2) (optimal)" && depth === 2 && hasSort) {
-      return {
-          code: `// The current algorithm appears to be optimal.\n// It utilizes sorting with an O(n^2) two-pointer approach.\n\n${code}`,
-          notes: "Algorithm is likely already at its optimal time complexity for this problem pattern (O(n^2) utilizing sorting)."
-      }
+  if (
+    complexityData &&
+    complexityData.optimized === "O(n^2) (optimal)" &&
+    depth === 2 &&
+    hasSort
+  ) {
+    return {
+      code: `// The current algorithm appears to be optimal.\n// It utilizes sorting with an O(n^2) two-pointer approach.\n\n${code}`,
+      notes:
+        "Algorithm is likely already at its optimal time complexity for this problem pattern (O(n^2) utilizing sorting).",
+    };
   }
 
   if (depth >= 3) {
-      return {
-          code: `// Suggested Optimization:\n// Look to reduce the O(n^${depth}) complexity.\n// Can an array sort and a two-pointer approach reduce one nested loop?\n\n${code}`,
-          notes: `Detected ${depth} nested loops (O(n^${depth})). Consider optimizing the innermost loops using a Hash Map, sorting with two-pointers, or memoization.`,
-      };
+    return {
+      code: `// Suggested Optimization:\n// Look to reduce the O(n^${depth}) complexity.\n// Can an array sort and a two-pointer approach reduce one nested loop?\n\n${code}`,
+      notes: `Detected ${depth} nested loops (O(n^${depth})). Consider optimizing the innermost loops using a Hash Map, sorting with two-pointers, or memoization.`,
+    };
   } else if (depth === 2) {
-      return {
-          code: `// Suggested Optimization:\n// Consider using an auxiliary data structure (Hash Map / Set) or trading space for time to eliminate the nested loop, bringing time complexity down to O(n) or O(n log n).\n\n${code}`,
-          notes: "Detected nested loops (O(n^2)). If possible, decouple the loops or use a Hash Map/Set for O(1) lookups to optimize the algorithm.",
-      };
+    return {
+      code: `// Suggested Optimization:\n// Consider using an auxiliary data structure (Hash Map / Set) or trading space for time to eliminate the nested loop, bringing time complexity down to O(n) or O(n log n).\n\n${code}`,
+      notes:
+        "Detected nested loops (O(n^2)). If possible, decouple the loops or use a Hash Map/Set for O(1) lookups to optimize the algorithm.",
+    };
   } else if (depth === 1) {
-      return {
-          code: `// Suggested Optimization:\n// Code appears to be O(n) linear time. See if any redundant operations can be pulled out of the loop to optimize constants.\n\n${code}`,
-          notes: "Detected linear scan (O(n)). Ensure loop body operations are O(1) and no redundant work is being done.",
-      };
+    return {
+      code: `// Suggested Optimization:\n// Code appears to be O(n) linear time. See if any redundant operations can be pulled out of the loop to optimize constants.\n\n${code}`,
+      notes:
+        "Detected linear scan (O(n)). Ensure loop body operations are O(1) and no redundant work is being done.",
+    };
   }
 
   return {
     code,
-    notes: "No obvious structural bottlenecks detected block-by-block. Ensure no hidden complexities exist in library calls or external dependencies.",
+    notes:
+      "No obvious structural bottlenecks detected block-by-block. Ensure no hidden complexities exist in library calls or external dependencies.",
   };
 }
 
@@ -294,9 +341,15 @@ function generateInterview(language, code) {
   };
 }
 
-export async function evaluateInterviewAnswer({ solution, language, interview }) {
+export async function evaluateInterviewAnswer({
+  solution,
+  language,
+  interview,
+}) {
   const source = solution || "";
-  const usesMap = /\bhash|map|dict|unordered_map|HashMap|seen|set|Set\b/i.test(source);
+  const usesMap = /\bhash|map|dict|unordered_map|HashMap|seen|set|Set\b/i.test(
+    source,
+  );
   const hasLoop = /\bfor\b|\bwhile\b/.test(source);
   const returns = /\breturn\b/.test(source);
 
@@ -311,13 +364,24 @@ export async function evaluateInterviewAnswer({ solution, language, interview })
   return {
     score,
     verdict: score >= 8 ? "Strong" : score >= 6 ? "Good" : "Needs Improvement",
-    feedback: "Analysis of your answer based on general programming principles... " + (usesMap ? "Good use of efficient data structures." : "Consider leveraging Sets or Maps for faster lookups if applicable."),
-    optimized_answer: "A strong response clearly defines time/space complexity, handles edge cases explicitly, and utilizes optimal data structures for the given problem scenario.",
+    feedback:
+      "Analysis of your answer based on general programming principles... " +
+      (usesMap
+        ? "Good use of efficient data structures."
+        : "Consider leveraging Sets or Maps for faster lookups if applicable."),
+    optimized_answer:
+      "A strong response clearly defines time/space complexity, handles edge cases explicitly, and utilizes optimal data structures for the given problem scenario.",
     expected_approach: interview?.expected_approach || "",
   };
 }
 
-export async function analyzeLocally({ code = "", language = "python", mode = "full", onProgress, fallbackReason = "" } = {}) {
+export async function analyzeLocally({
+  code = "",
+  language = "python",
+  mode = "full",
+  onProgress,
+  fallbackReason = "",
+} = {}) {
   const normalizedCode = typeof code === "string" ? code : String(code ?? "");
   const normalizedLanguage = String(language || "python").toLowerCase();
 
@@ -330,10 +394,19 @@ export async function analyzeLocally({ code = "", language = "python", mode = "f
   const flowPack = buildFlow(lines);
   const timeline = buildVariableTimeline(lines);
   const recursionTree = buildRecursionTree(normalizedCode, normalizedLanguage);
-  const optimized = optimizeCode(normalizedCode, normalizedLanguage, complexity);
+  const optimized = optimizeCode(
+    normalizedCode,
+    normalizedLanguage,
+    complexity,
+  );
   const fixedCode = applyQuickFix(normalizedCode, bug, normalizedLanguage);
 
-  emit(onProgress, "local:reason", 0.62, "Building flow graph and state timeline");
+  emit(
+    onProgress,
+    "local:reason",
+    0.62,
+    "Building flow graph and state timeline",
+  );
   await wait(120);
 
   const structured = sanitizeStructuredAnalysis(
@@ -372,4 +445,3 @@ export async function analyzeLocally({ code = "", language = "python", mode = "f
 }
 
 export default analyzeLocally;
-

@@ -78,9 +78,9 @@ export default defineConfig({
     headers: CROSS_ORIGIN_HEADERS,
   },
   assetsInclude: ["**/*.wasm"],
-  worker: {
-    format: "es",
-  },
+  // worker: {
+  //   format: "es",
+  // },
   optimizeDeps: {
     exclude: ["@runanywhere/web-llamacpp", "@runanywhere/web-onnx"],
   },
