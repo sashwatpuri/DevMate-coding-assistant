@@ -880,26 +880,69 @@ export async function generateInterviewProblem({ code = "", language = "python",
   };
 }
 
-export async function evaluateInterview({ solution = "", language = "python", interview = {} } = {}) {
-  await initRuntime();
-  await getOrLoadModel();
+export async function evaluateInterview({ solution = "", language = "python", interview = {}, onProgress } = {}) {
+  emit(onProgress, { stage: "eval:start", progress: 0.05, message: "Starting interview evaluation…" });
 
-  const response = await requestStructuredObject({
-    prompt: buildInterviewEvaluationPrompt(interview?.problem, solution, language),
-    expectedKeys: ["score", "verdict", "feedback", "optimized_answer"],
-    schema: INTERVIEW_EVALUATION_SCHEMA,
-    label: "interview-eval",
-    maxTokens: 320,
-  });
+  try {
+    // Only re-initialize if the model isn't already loaded — avoids long async
+    // operations that the browser mistakes for a page-navigation event.
+    if (!runtimeState.initialized) {
+      emit(onProgress, { stage: "eval:init", progress: 0.1, message: "Initializing runtime…" });
+      await initRuntime({ onProgress });
+    }
 
-  const normalized = normalizeEvaluation(response, interview);
-  if (!normalized) {
-    throw new Error("Interview evaluation response was missing required fields.");
+    if (!runtimeState.modelReady) {
+      emit(onProgress, { stage: "eval:model", progress: 0.2, message: "Loading language model…" });
+      await getOrLoadModel({ onProgress });
+    }
+
+    emit(onProgress, { stage: "eval:inference", progress: 0.5, message: "Evaluating your solution…" });
+
+    const response = await requestStructuredObject({
+      prompt: buildInterviewEvaluationPrompt(interview?.problem, solution, language),
+      expectedKeys: ["score", "verdict", "feedback", "optimized_answer"],
+      schema: INTERVIEW_EVALUATION_SCHEMA,
+      label: "interview-eval",
+      onProgress,
+      maxTokens: 320,
+    });
+
+    const normalized = normalizeEvaluation(response, interview);
+    if (!normalized) {
+      throw new Error("Interview evaluation response was missing required fields.");
+    }
+
+    runtimeState.backend = BACKENDS.RUNANYWHERE;
+    runtimeState.reason = buildRunAnywhereReason();
+    emit(onProgress, { stage: "eval:done", progress: 1, message: "Evaluation complete." });
+    return normalized;
+  } catch (error) {
+    console.warn("[DevMate] evaluateInterview: LLM path failed, falling back to local analysis.", error);
+    emit(onProgress, {
+      stage: "eval:fallback",
+      progress: 0.9,
+      message: "Model unavailable — using local evaluation.",
+    });
+
+    // Deterministic fallback: re-use the local analyzer to synthesize a minimal result.
+    const localResult = await analyzeLocally({
+      code: solution,
+      language,
+      mode: "interview",
+      onProgress,
+      fallbackReason: error?.message || "Model failed during evaluation",
+    });
+
+    return normalizeEvaluation(
+      {
+        score: localResult?.score ?? 50,
+        verdict: localResult?.verdict ?? "Partially correct — local analysis only",
+        feedback: localResult?.feedback ?? "The AI model could not be loaded. Review your solution manually.",
+        optimized_answer: localResult?.optimized_answer ?? solution,
+      },
+      interview,
+    );
   }
-
-  runtimeState.backend = BACKENDS.RUNANYWHERE;
-  runtimeState.reason = buildRunAnywhereReason();
-  return normalized;
 }
 
 export default {

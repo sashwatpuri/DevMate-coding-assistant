@@ -326,7 +326,14 @@ export default function App() {
   async function handleEvaluateInterview(solution) {
     setIsEvaluatingInterview(true);
     try {
-      setInterviewEvaluation(await evaluateInterview({ solution, language, interview: result?.interview }));
+      setInterviewEvaluation(
+        await evaluateInterview({
+          solution,
+          language,
+          interview: result?.interview,
+          onProgress: handleRuntimeProgress,
+        })
+      );
     } catch (error) {
       console.error("[DevMate] Interview evaluation failed:", error);
       setStatusMessage(error.message || "Interview evaluation failed. Please try again.");
